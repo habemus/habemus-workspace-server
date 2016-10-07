@@ -44,7 +44,10 @@ module.exports = function (app, options) {
         .catch((err) => {
           if (err.name === 'NotFound') {
 
-            return app.controllers.workspace.create(username, projectId);
+            return app.controllers.workspace.create(username, projectId)
+              .then((workspace) => {
+                _workspace = workspace;
+              });
 
           } else {
             throw err;

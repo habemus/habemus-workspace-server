@@ -8,6 +8,6 @@
  * @param  {Express Req} req
  * @return {*}
  */
-exports.evaluateOpt = function (opt, req) {
+exports.evalOpt = function (opt, req) {
   return (typeof opt === 'function') ? opt(req) : opt;
 };

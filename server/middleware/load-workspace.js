@@ -27,8 +27,8 @@ module.exports = function (app, options) {
    * @return {String}
    */
   const _identifierProp = options.identifierProp || function (req) {
-    if (req.query.byCode) {
-      return 'code';
+    if (req.query.byProjectCode) {
+      return 'projectCode';
     } else if (req.query.byProjectId) {
       return 'projectId';
     } else {
@@ -45,14 +45,14 @@ module.exports = function (app, options) {
 
   return function loadWorkspace(req, res, next) {
 
-    var identifier     = aux.evaluateOpt(_identifier, req);
-    var identifierProp = aux.evaluateOpt(_identifierProp, req);
-    var as             = aux.evaluateOpt(_as, req);
+    var identifier     = aux.evalOpt(_identifier, req);
+    var identifierProp = aux.evalOpt(_identifierProp, req);
+    var as             = aux.evalOpt(_as, req);
 
     var getPromise;
 
     switch (identifierProp) {
-      case 'code':
+      case 'projectCode':
         getPromise = app.controllers.workspace.getByProjectCode(identifier);
         break;
       case 'projectId':

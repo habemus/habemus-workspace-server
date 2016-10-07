@@ -13,7 +13,7 @@ module.exports = function (app, options) {
     hAccountToken: options.hAccountToken
   };
 
-  app.post('/project/:projectId/workspaces',
+  app.post('/project/:projectId/workspace/ensure-ready',
     app.middleware.authenticate(authenticateOptions),
     app.middleware.verifyProjectPermissions({
       hProjectToken: options.hProjectToken,
@@ -29,7 +29,7 @@ module.exports = function (app, options) {
       var username  = req.tokenData.username;
       var projectId = req.params.projectId;
 
-      workspaceCtrl.create(username, projectId)
+      app.services.workspaceSetupManager.ensureReady(username, projectId)
         .then((workspace) => {
           var msg = app.services.messageAPI.item(workspace, interfaces.WORKSPACE_DATA);
           res.status(201).json(msg);
@@ -38,8 +38,18 @@ module.exports = function (app, options) {
     }
   );
 
-  app.get('/project/:projectId/workspace',
+  app.get('/project/:projectIdentifier/workspace',
     app.middleware.authenticate(authenticateOptions),
+
+    // we must first load the workspace
+    // before verifying permissions,
+    // as the `verifyProjectPermissions`
+    // middleware requires a `projectId`
+    app.middleware.loadWorkspace({
+      identifier: function (req) {
+        return req.params.projectIdentifier;
+      },
+    }),
     app.middleware.verifyProjectPermissions({
       hProjectToken: options.hProjectToken,
       permissions: [
@@ -47,12 +57,9 @@ module.exports = function (app, options) {
         'update',
         'delete',
       ],
-    }),
-    app.middleware.loadWorkspace({
-      identifier: function (req) {
-        return req.params.projectId;
-      },
-      identifierProp: 'projectId',
+      projectId: function (req) {
+        return req.workspace.projectId;
+      }
     }),
     function (req, res, next) {
 

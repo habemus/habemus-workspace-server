@@ -32,6 +32,7 @@ module.exports = function (options) {
    * as `io` property in the main application
    */
   app.io = socketIO();
+  app.io.path('/public/socket.io');
 
   /**
    * Hash containing all errors the application may throw.
