@@ -1,38 +1,38 @@
 const util = require('util');
 
-const HDevError = require('./base');
+const HWorkspaceError = require('./base');
 
 /**
  * Authentication errors
  */
 function Unauthorized(message) {
-  HDevError.call(this, message);
+  HWorkspaceError.call(this, message);
 }
-util.inherits(Unauthorized, HDevError);
+util.inherits(Unauthorized, HWorkspaceError);
 Unauthorized.prototype.name = 'Unauthorized';
 
 function AuthenticationError(message) {
-  HDevError.call(this, message);
+  HWorkspaceError.call(this, message);
 }
-util.inherits(AuthenticationError, HDevError);
+util.inherits(AuthenticationError, HWorkspaceError);
 AuthenticationError.prototype.name = 'AuthenticationError';
 
 function AuthenticationTimeout(message) {
-  HDevError.call(this, message);
+  HWorkspaceError.call(this, message);
 }
-util.inherits(AuthenticationTimeout, HDevError);
+util.inherits(AuthenticationTimeout, HWorkspaceError);
 AuthenticationTimeout.prototype.name = 'AuthenticationTimeout';
 
 function NotFound() {
-  HDevError.call(this, 'resource not found');
+  HWorkspaceError.call(this, 'resource not found');
 }
-util.inherits(NotFound, HDevError);
+util.inherits(NotFound, HWorkspaceError);
 NotFound.prototype.name = 'NotFound';
 
 function InvalidToken() {
-  HDevError.call(this, 'invalid token');
+  HWorkspaceError.call(this, 'invalid token');
 }
-util.inherits(InvalidToken, HDevError);
+util.inherits(InvalidToken, HWorkspaceError);
 InvalidToken.prototype.name = 'InvalidToken';
 
 exports.Unauthorized          = Unauthorized;

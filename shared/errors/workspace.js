@@ -1,17 +1,17 @@
 const util = require('util');
 
-const HDevError = require('./base');
+const HWorkspaceError = require('./base');
 
 function WorkspaceExists(message) {
-  HDevError.call(this, message);
+  HWorkspaceError.call(this, message);
 }
-util.inherits(WorkspaceExists, HDevError);
+util.inherits(WorkspaceExists, HWorkspaceError);
 WorkspaceExists.prototype.name = 'WorkspaceExists';
 
 function NotFound(message) {
-  HDevError.call(this, message);
+  HWorkspaceError.call(this, message);
 }
-util.inherits(NotFound, HDevError);
+util.inherits(NotFound, HWorkspaceError);
 NotFound.prototype.name = 'NotFound';
 
 exports.WorkspaceExists = WorkspaceExists;

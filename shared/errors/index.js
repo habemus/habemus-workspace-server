@@ -2,7 +2,7 @@
 var util = require('util');
 
 // own deps
-const HDevError = require('./base');
+const HWorkspaceError = require('./base');
 
 /**
  * Happens when any required option is invalid
@@ -15,16 +15,16 @@ const HDevError = require('./base');
  * @param {String} message
  */
 function InvalidOption(option, kind, message) {
-  HDevError.call(this, message);
+  HWorkspaceError.call(this, message);
 
   this.option = option;
   this.kind = kind;
 }
-util.inherits(InvalidOption, HDevError);
+util.inherits(InvalidOption, HWorkspaceError);
 InvalidOption.prototype.name = 'InvalidOption';
 exports.InvalidOption = InvalidOption;
 
-exports.HDevError = HDevError;
+exports.HWorkspaceError = HWorkspaceError;
 
 Object.assign(exports, require('./connection'));
 Object.assign(exports, require('./authentication'));

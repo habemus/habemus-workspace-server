@@ -5,13 +5,13 @@ const util = require('util');
  * @param {String} code   
  * @param {String} message
  */
-function HDevError(code, message) {
+function HWorkspaceError(code, message) {
   Error.call(this);
   
   this.message = message;
 }
-util.inherits(HDevError, Error);
+util.inherits(HWorkspaceError, Error);
 
-HDevError.prototype.name = 'HDevError';
+HWorkspaceError.prototype.name = 'HWorkspaceError';
 
-module.exports = HDevError;
+module.exports = HWorkspaceError;

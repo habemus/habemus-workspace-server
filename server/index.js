@@ -58,16 +58,14 @@ module.exports = function (options) {
      */
     app.middleware = {};
 
-    // app.middleware.parseAuthToken =
-    //   require('./middleware/parse-auth-token').bind(null, app);
-    // app.middleware.fetchProjectData =
-    //   require('./middleware/fetch-project-data').bind(null, app);
-    // app.middleware.cors =
-    //   require('./middleware/cors').bind(null, app);
-    // app.middleware.loadWorkspace =
-    //   require('./middleware/load-workspace').bind(null, app);
-    // app.middleware.verifyPermissions =
-    //   require('./middleware/verify-permissions').bind(null, app);
+    app.middleware.authenticate =
+      require('./middleware/authenticate').bind(null, app);
+    app.middleware.loadWorkspace =
+      require('./middleware/load-workspace').bind(null, app);
+    app.middleware.cors =
+      require('./middleware/cors').bind(null, app);
+    app.middleware.verifyProjectPermissions =
+      require('./middleware/verify-project-permissions').bind(null, app);
 
     /**
      **
@@ -76,10 +74,10 @@ module.exports = function (options) {
      **
      **
      **/
-    // require('./routes')(app, options);
+    require('./routes/public')(app, options);
 
     // express error-handling
-    // require('./error-handlers/h-dev-error')(app, options);
+    require('./error-handlers/h-workspace-error')(app, options);
 
     /**
      **
