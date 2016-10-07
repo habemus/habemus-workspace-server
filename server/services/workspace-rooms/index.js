@@ -52,12 +52,12 @@ function WorkspaceRoomManager(options) {
 }
 
 WorkspaceRoomManager.prototype.createWorkspaceRoom = function (workspace) {
-  if (!workspace || !workspace.code) {
+  if (!workspace || !workspace._id) {
     return Bluebird.reject(new Error('invalid workspace'));
   }
 
-  if (this.workspaceRooms[workspace.code]) {
-    return Bluebird.reject(new Error('workspaceRoom exists: ' + workspace.code));
+  if (this.workspaceRooms[workspace._id]) {
+    return Bluebird.reject(new Error('workspaceRoom exists: ' + workspace._id));
   }
 
   /**
@@ -76,31 +76,31 @@ WorkspaceRoomManager.prototype.createWorkspaceRoom = function (workspace) {
    * Once the room emits an 'empty' event,
    * it should be destroyed.
    */
-  room.once('empty', this.destroyWorkspaceRoom.bind(this, workspace.code));
+  room.once('empty', this.destroyWorkspaceRoom.bind(this, workspace._id));
 
   // return promise for the room's setup to be finished
   return room.setup()
     .then(() => {
 
       /**
-       * Save the workspace room by the workspace.code
+       * Save the workspace room by the workspace._id
        */
-      this.workspaceRooms[workspace.code] = room;
+      this.workspaceRooms[workspace._id] = room;
 
       return room;
     });
 };
 
 /**
- * Destroys the workspace room identified by the given workspaceCode
- * @param  {String} workspaceCode
+ * Destroys the workspace room identified by the given workspaceId
+ * @param  {String} workspaceId
  */
-WorkspaceRoomManager.prototype.destroyWorkspaceRoom = function (workspaceCode) {
+WorkspaceRoomManager.prototype.destroyWorkspaceRoom = function (workspaceId) {
 
-  var room = this.workspaceRooms[workspaceCode];
+  var room = this.workspaceRooms[workspaceId];
 
   // TODO study whether this deletion is enough
-  delete this.workspaceRooms[workspaceCode];
+  delete this.workspaceRooms[workspaceId];
 
   return room.destroy()
     .then(() => {
@@ -109,16 +109,16 @@ WorkspaceRoomManager.prototype.destroyWorkspaceRoom = function (workspaceCode) {
 };
 
 /**
- * Retrieves the workspace rooom by the workspace code
- * @param  {String} workspaceCode
+ * Retrieves the workspace rooom by the workspace's _id
+ * @param  {String} workspaceId
  * @return {WorkspaceRoom}
  */
-WorkspaceRoomManager.prototype.getWorkspaceRoom = function (workspaceCode) {
-  return Bluebird.resolve(this.workspaceRooms[workspaceCode]);
+WorkspaceRoomManager.prototype.getWorkspaceRoom = function (workspaceId) {
+  return Bluebird.resolve(this.workspaceRooms[workspaceId]);
 };
 
 /**
- * Checks whether an active workspace object exists for the given workspaceCode.
+ * Checks whether an active workspace object exists for the given workspaceId.
  * In case there is an workspace, simply return it.
  * Otherwise, create a workspace object and return it.
  * 
@@ -126,14 +126,14 @@ WorkspaceRoomManager.prototype.getWorkspaceRoom = function (workspaceCode) {
  * @return {WorkspaceRoom}
  */
 WorkspaceRoomManager.prototype.ensureWorkspaceRoom = function (workspace) {
-  if (!workspace || !workspace.code) {
+  if (!workspace || !workspace._id) {
     throw new Error('workspace is required');
   }
 
-  if (!this.workspaceRooms[workspace.code]) {
+  if (!this.workspaceRooms[workspace._id]) {
     return this.createWorkspaceRoom(workspace);
   } else {
-    return Bluebird.resolve(this.workspaceRooms[workspace.code]);
+    return Bluebird.resolve(this.workspaceRooms[workspace._id]);
   }
 };
 

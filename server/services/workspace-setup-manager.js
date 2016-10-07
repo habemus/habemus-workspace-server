@@ -38,7 +38,7 @@ module.exports = function (app, options) {
         })
         .then((isReady) => {
           if (!isReady) {
-            return app.controllers.workspace.loadLatestVersion(workspace);
+            return app.controllers.workspace.loadLatestVersion(_workspace);
           }
         })
         .catch((err) => {

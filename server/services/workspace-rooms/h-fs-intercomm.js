@@ -4,7 +4,7 @@ const util = require('util');
 // third-party dependencies
 const Intercomm = require('intercomm');
 const HFs       = require('h-fs');
-const debug     = require('debug')('h-dev');
+const debug     = require('debug')('h-workspace');
 
 // constants
 const SHARED_CONSTANTS = require('../../../shared/constants');

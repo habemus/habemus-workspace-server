@@ -93,7 +93,8 @@ module.exports = function (app, options) {
       .then((workspace) => {
         _workspace = workspace;
 
-        return app.services.workspaceSetupManager.ensureReady(workspace);
+        return app.services.workspaceSetupManager
+          .ensureReady(_tokenData.username, workspace.projectId);
       })
       .then((workspace) => {
         // remove all event listeners from the socket for the `message` event
@@ -103,7 +104,7 @@ module.exports = function (app, options) {
         // ensure the workspaceRoom object exists
         // and let the socket join it
         return app.services
-          .workspaceRoomManager
+          .workspaceRooms
           .ensureWorkspaceRoom(_workspace);
       })
       .then((workspaceRoom) => {
@@ -122,16 +123,16 @@ module.exports = function (app, options) {
    * any action other than 'publish' and 'subscribe';
    * 
    * @param  {Socket.io Socket} socket
-   * @param  {String} code
+   * @param  {String} projectCode
    * @param  {Object} role
    * @return {Bluebird -> undefined}
    */
-  socketAuthCtrl.connectAnonymousSocket = function (socket, code) {
+  socketAuthCtrl.connectAnonymousSocket = function (socket, projectCode) {
     if (!socket) {
       return Bluebird.reject(new errors.InvalidOption('socket', 'required'));
     }
-    if (!code) {
-      return Bluebird.reject(new errors.InvalidOption('code', 'required'));
+    if (!projectCode) {
+      return Bluebird.reject(new errors.InvalidOption('projectCode', 'required'));
     }
 
     /**
@@ -140,17 +141,22 @@ module.exports = function (app, options) {
      */
     socket.role = ROLES.ANONYMOUS_CLIENT;
 
-    /**
-     * Check if the workspaceRoom exists
-     */
-    return app.services
-      .workspaceRoomManager
-      .getWorkspaceRoom(code)
+    // retrieve the workspace using the projectCode
+    return app.controllers.workspace.getByProjectCode(projectCode)
+      .then((workspace) => {
+        // retrieve the workspace's room
+        return app.services.workspaceRooms.getWorkspaceRoom(workspace._id);
+      })
       .then((workspaceRoom) => {
-        return workspaceRoom.join(
-          socket,
-          ROLES.ANONYMOUS_CLIENT
-        );
+
+        if (workspaceRoom) {
+          return workspaceRoom.join(
+            socket,
+            ROLES.ANONYMOUS_CLIENT
+          );
+        } else {
+          return Bluebird.reject(new errors.NotFound(projectCode));
+        }
       });
   };
 

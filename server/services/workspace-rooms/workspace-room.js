@@ -4,7 +4,7 @@ const EventEmitter = require('events');
 
 // third-party
 const Bluebird    = require('bluebird');
-const debug       = require('debug')('h-dev-cloud');
+const debug       = require('debug')('h-workspace');
 const jsonMessage = require('json-message');
 
 // own
@@ -196,7 +196,7 @@ WorkspaceRoom.prototype._handleSocketDisconnect = function (socket) {
  */
 WorkspaceRoom.prototype._routeSocketMessage = function (socket, message) {
 
-  debug('message received in socket for workspace %s', this.workspace.code, message);
+  debug('message received in socket for workspace %s', this.workspace._id, message);
 
   if (socket.role === ROLES.AUTHENTICATED_CLIENT) {
     this._routeAuthenticatedSocketMessage(socket, message);

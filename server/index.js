@@ -88,7 +88,7 @@ module.exports = function (options) {
      **
      **
      **/
-    // require('./io')(app, options);
+    require('./io')(app, options);
     
     return app;
   })
