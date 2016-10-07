@@ -7,11 +7,11 @@ const fse = require('fs-extra');
 const Bluebird = require('bluebird');
 
 // own dependencies
-const createAdminApp = require('../../../../server');
-const AuthenticatedClient = require('../../../../client/authenticated');
+const createAdminApp = require('../../../server');
+const AuthenticatedClient = require('h-workspace-client/authenticated');
 
 // auxiliary
-const aux = require('../../../auxiliary');
+const aux = require('../../aux');
 
 describe('rpc', function () {
 
@@ -22,16 +22,19 @@ describe('rpc', function () {
    * these tests are very sensitive
    */
   beforeEach(function () {
+
+    aux.enableHMocks();
+
     return aux.setup().then((assets) => {
       ASSETS = assets;
 
       var server = aux.createTeardownServer();
 
-      ASSETS.hDev = createAdminApp(aux.genOptions());
-      ASSETS.hDevURI = 'http://localhost:4000';
+      ASSETS.hWorkspace = createAdminApp(aux.genOptions());
+      ASSETS.hWorkspaceURI = 'http://localhost:4000';
 
       return Bluebird.all([
-        ASSETS.hDev.attach(server),
+        ASSETS.hWorkspace.attach(server),
         new Bluebird((resolve, reject) => {
           server.listen(4000, resolve);
         })
@@ -39,14 +42,7 @@ describe('rpc', function () {
     })
     .then(() => {
       // create a workspace
-      ASSETS.projectApp.respondWith('/project/:identifier/versions|get', 'success');
-      ASSETS.projectApp.respondWith('/project/:identifier/version/:versionId/signed-url|get', 'success');
-      ASSETS.projectApp.respondWith('/auxiliary-routes/file-download|get', 'success');
-
-      return ASSETS.hDev.controllers.workspace.create('TOKEN', {
-        code: ASSETS.projectApp.mockResponseData.projectCode,
-        projectId: ASSETS.projectApp.mockResponseData.projectId,
-      });
+      return ASSETS.hWorkspace.controllers.workspace.create('someuser', 'project-1-id');
     })
     .then((workspace) => {
       ASSETS.workspace = workspace;
@@ -58,34 +54,31 @@ describe('rpc', function () {
   });
 
   it('if two clients are connected to the same hDev project, they should be capable of executing rpc methods on each other', function (done) {
-    ASSETS.projectApp.respondWith('/project/:identifier/verify-permissions|get', 'success');
-    ASSETS.projectApp.respondWith('/project/:identifier|get', 'success');
 
-    const workspaceCode = ASSETS.workspace.code;
     const projectRoot = ASSETS.tmpRootPath + '/' + ASSETS.workspace._id;
 
-    const token = 'TOKEN';
+    const token = 'VALID_TOKEN';
     const permissionScopes = ['read', 'write', 'update', 'delete'];
 
     var client1 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI,
+      serverURI: ASSETS.hWorkspaceURI,
     });
 
     var client2 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     var client3 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     Promise.all([
-      client1.connect(token, workspaceCode),
-      client2.connect(token, workspaceCode),
-      client3.connect(token, workspaceCode)
+      client1.connect(token, 'project-1-code'),
+      client2.connect(token, 'project-1-code'),
+      client3.connect(token, 'project-1-code')
     ])
     .then(function () {
 

@@ -7,11 +7,11 @@ const fse = require('fs-extra');
 const Bluebird = require('bluebird');
 
 // own dependencies
-const createAdminApp = require('../../../../server');
-const HDevClient = require('../../../../client/authenticated');
+const hWorkspace = require('../../../server');
+const AuthenticatedClient = require('h-workspace-client/authenticated');
 
 // auxiliary
-const aux = require('../../../auxiliary');
+const aux = require('../../aux');
 
 describe('event broadcasting', function () {
 
@@ -22,33 +22,27 @@ describe('event broadcasting', function () {
    * these tests are very sensitive
    */
   beforeEach(function () {
+
+    aux.enableHMocks();
+
     return aux.setup().then((assets) => {
       ASSETS = assets;
 
       var server = aux.createTeardownServer();
 
-      ASSETS.hDev = createAdminApp(aux.genOptions());
-      ASSETS.hDevURI = 'http://localhost:4000';
+      ASSETS.hWorkspace = hWorkspace(aux.genOptions());
+      ASSETS.hWorkspaceURI = 'http://localhost:4000';
 
       return Bluebird.all([
-        ASSETS.hDev.attach(server),
+        ASSETS.hWorkspace.attach(server),
         new Bluebird((resolve, reject) => {
           server.listen(4000, resolve);
         })
       ]);
     })
     .then(() => {
-      ASSETS.projectApp.respondWith('/project/:identifier/verify-permissions|get', 'success');
-      
-      ASSETS.projectApp.respondWith('/project/:identifier/versions|get', 'success');
-      ASSETS.projectApp.respondWith('/project/:identifier/version/:versionId/signed-url|get', 'success');
-      ASSETS.projectApp.respondWith('/auxiliary-routes/file-download|get', 'success');
-
       // create a workspace
-      return ASSETS.hDev.controllers.workspace.create('TOKEN', {
-        code: ASSETS.projectApp.mockResponseData.projectCode,
-        projectId: ASSETS.projectApp.mockResponseData.projectId,
-      });
+      return ASSETS.hWorkspace.controllers.workspace.create('someuser', 'project-1-id');
     })
     .then((workspace) => {
       ASSETS.workspace = workspace;
@@ -60,31 +54,29 @@ describe('event broadcasting', function () {
   });
 
   it('if two clients are connected to the same hDev project, they should be capable of notifying events to each other', function (done) {
-
-    const workspaceCode = ASSETS.workspace.code;
     
-    const token = 'TOKEN';
+    const token = 'VALID_TOKEN';
     const permissionScopes = ['read', 'write', 'update', 'delete'];
 
-    var client1 = new HDevClient({
+    var client1 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI,
+      serverURI: ASSETS.hWorkspaceURI,
     });
 
-    var client2 = new HDevClient({
+    var client2 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
-    var client3 = new HDevClient({
+    var client3 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     Promise.all([
-      client1.connect(token, workspaceCode),
-      client2.connect(token, workspaceCode),
-      client3.connect(token, workspaceCode)
+      client1.connect(token, 'project-1-code'),
+      client2.connect(token, 'project-1-code'),
+      client3.connect(token, 'project-1-code')
     ])
     .then(function () {
 

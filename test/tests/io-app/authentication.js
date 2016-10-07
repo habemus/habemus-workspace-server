@@ -11,7 +11,7 @@ const Bluebird = require('bluebird');
 const hWorkspace = require('../../../server');
 
 // auxiliary
-const aux = require('../../auxiliary');
+const aux = require('../../aux');
 
 describe('server authentication', function () {
 
@@ -22,18 +22,21 @@ describe('server authentication', function () {
    * these tests are very sensitive
    */
   beforeEach(function () {
+
+    aux.enableHMocks();
+
     return aux.setup().then((assets) => {
       ASSETS = assets;
 
       var server = aux.createTeardownServer();
 
-      ASSETS.hDev = hWorkspace(aux.genOptions({
+      ASSETS.hWorkspace = hWorkspace(aux.genOptions({
         authTimeout: 5000,
       }));
-      ASSETS.hDevURI = 'http://localhost:4000';
+      ASSETS.hWorkspaceURI = 'http://localhost:4000';
 
       return Bluebird.all([
-        ASSETS.hDev.attach(server),
+        ASSETS.hWorkspace.attach(server),
         new Bluebird((resolve, reject) => {
           server.listen(4000, resolve);
         }),
@@ -41,14 +44,7 @@ describe('server authentication', function () {
     })
     .then(() => {
       // create a workspace
-      ASSETS.projectApp.respondWith('/project/:identifier/versions|get', 'success');
-      ASSETS.projectApp.respondWith('/project/:identifier/version/:versionId/signed-url|get', 'success');
-      ASSETS.projectApp.respondWith('/auxiliary-routes/file-download|get', 'success');
-
-      return ASSETS.hDev.controllers.workspace.create('TOKEN', {
-        code: ASSETS.projectApp.mockResponseData.projectCode,
-        projectId: ASSETS.projectApp.mockResponseData.projectId,
-      });
+      return ASSETS.hWorkspace.controllers.workspace.create('someuser', 'project-1-id');
     })
     .then((workspace) => {
       ASSETS.workspace = workspace;
@@ -60,19 +56,13 @@ describe('server authentication', function () {
   });
 
   it('basic manual authentication', function (done) {
-    // project app authorizes
-    ASSETS.projectApp.respondWith('/project/:identifier/verify-permissions|get', 'success');
-
-    // ensure the project root exists
-    const workspaceCode = ASSETS.workspace.code;
-
-    var socket = socketIOClient(ASSETS.hDevURI);
+    var socket = socketIOClient(ASSETS.hWorkspaceURI);
 
     socket.on('connect', function () {
       socket.emit('authenticate', {
         role: 'authenticated-client',
-        authToken: 'TOKEN',
-        code: workspaceCode,
+        authToken: 'VALID_TOKEN',
+        code: 'project-1-code',
       });
     });
 
@@ -92,16 +82,14 @@ describe('server authentication', function () {
   describe('authentication', function () {
 
     it('should require a token', function (done) {
-      
-      const workspaceCode = ASSETS.workspace.code;
 
-      var socket = socketIOClient(ASSETS.hDevURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI);
 
       socket.on('connect', function () {
         socket.emit('authenticate', {
           role: 'authenticated-client',
           // authToken: 'TOKEN',
-          code: workspaceCode,
+          code: 'project-1-code',
         });
       });
 
@@ -123,15 +111,13 @@ describe('server authentication', function () {
 
     it('should require the `code`', function (done) {
 
-      const workspaceCode = ASSETS.workspace.code;
-
-      var socket = socketIOClient(ASSETS.hDevURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI);
 
       socket.on('connect', function () {
         socket.emit('authenticate', {
           role: 'authenticated-client',
           authToken: 'TOKEN',
-          // code: workspaceCode,
+          // code: 'project-1-code',
         });
       });
 
@@ -141,7 +127,7 @@ describe('server authentication', function () {
 
       socket.once('authentication-error', function (err) {
         err.name.should.equal('InvalidOption');
-        err.option.should.equal('code');
+        err.option.should.equal('projectCode');
         err.kind.should.equal('required');
 
         // disconnect client
@@ -150,17 +136,13 @@ describe('server authentication', function () {
       });
     });
     
-    it('should fail if the projectApp does not authorize the token permissions', function (done) {
-      ASSETS.projectApp.respondWith('/project/:identifier/verify-permissions|get', 'unauthorized');
-
-      const workspaceCode = ASSETS.workspace.code;
-
-      var socket = socketIOClient(ASSETS.hDevURI);
+    it.skip('should fail if the projectApp does not authorize the token permissions', function (done) {
+      var socket = socketIOClient(ASSETS.hWorkspaceURI);
 
       socket.on('connect', function () {
         socket.emit('authenticate', {
           authToken: 'TOKEN',
-          code: workspaceCode,
+          code: 'project-1-code',
           role: 'authenticated-client',
         });
       });
@@ -184,7 +166,7 @@ describe('server authentication', function () {
 
       const workspaceCode = ASSETS.workspace.code;
 
-      var socket = socketIOClient(ASSETS.hDevURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI);
 
       socket.on('connect', function () {
         socket.emit('message', {
@@ -210,7 +192,7 @@ describe('server authentication', function () {
     it('should disconnect clients that are not authenticated after `authTimeout` ms', function (done) {
       this.timeout(6000);
 
-      var socket = socketIOClient(ASSETS.hDevURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI);
 
       socket.on('connect', function () {
 

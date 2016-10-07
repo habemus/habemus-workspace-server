@@ -7,6 +7,8 @@ const fse = require('fs-extra');
 const MongoClient = require('mongodb').MongoClient;
 const enableDestroy = require('server-destroy');
 const Bluebird = require('bluebird');
+const mockery = require('mockery');
+const mockPrivateHProject = require('h-project-client/mock/private');
 
 const fileServer = require('./file-server');
 
@@ -34,6 +36,44 @@ exports.defaultOptions = {
   workspacesFsRoot: TMP_ROOT_PATH,
   workspaceHostURL: 'http://habemus.website',
   corsWhitelist: '*',
+};
+
+/**
+ * Enables mockery for h-modules
+ */
+exports.enableHMocks = function () {
+  mockery.enable({
+    warnOnReplace: false,
+    warnOnUnregistered: false,
+    useCleanCache: true
+  });
+
+  // mock h-project/client/private
+  mockery.registerMock(
+    'h-project-client/private',
+    mockPrivateHProject({
+      data: require('./h-project-mock-data'),
+    })
+  );
+
+  function PrivateHAccountMock() {}
+  PrivateHAccountMock.prototype.decodeToken = function (authToken, token) {
+    // console.log('decodeToken', authToken, token);
+
+    if (token === 'VALID_TOKEN') {
+      return Bluebird.resolve({
+        sub: 'user-1-id',
+        username: 'user1username',
+      });
+    } else {
+      return Bluebird.reject(new Error('Unauthorized'));
+    }
+  };
+
+  mockery.registerMock(
+    'h-account-client/private',
+    PrivateHAccountMock
+  );
 };
 
 /**
@@ -165,6 +205,10 @@ exports.registerTeardown = function (teardown) {
  * Executes all functions listed at TEARDOWN_CALLBACKS
  */
 exports.teardown = function () {
+
+  // disable mockery
+  mockery.disable();
+
   return Promise.all(TEARDOWN_CALLBACKS.map((fn) => {
     return fn();
   }))

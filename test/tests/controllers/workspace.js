@@ -7,8 +7,6 @@ const http   = require('http');
 const should   = require('should');
 const fse      = require('fs-extra');
 const Bluebird = require('bluebird');
-const mockery  = require('mockery');
-const mockPrivateHProject = require('h-project-client/mock/private');
 
 // own dependencies
 const hWorkspace = require('../../../server');
@@ -25,19 +23,7 @@ describe('workspaceCtrl', function () {
 
   beforeEach(function () {
 
-    mockery.enable({
-      warnOnReplace: false,
-      warnOnUnregistered: false,
-      useCleanCache: true
-    });
-
-    // mock h-project/client/private
-    mockery.registerMock(
-      'h-project-client/private',
-      mockPrivateHProject({
-        data: PROJECT_MOCK_DATA,
-      })
-    );
+    aux.enableHMocks();
 
     return aux.setup()
       .then((assets) => {
@@ -55,8 +41,6 @@ describe('workspaceCtrl', function () {
   });
 
   afterEach(function () {
-    mockery.disable();
-
     return aux.teardown();
   });
 

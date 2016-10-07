@@ -8,13 +8,13 @@ const fse = require('fs-extra');
 const Bluebird = require('bluebird');
 
 // own dependencies
-const createAdminApp = require('../../../server');
-const AuthenticatedClient = require('../../../client/authenticated');
+const hWorkspace = require('../../../server');
+const AuthenticatedClient = require('h-workspace-client/authenticated');
 
 // auxiliary
-const aux = require('../../auxiliary');
+const aux = require('../../aux');
 
-describe('workspaceRoomManager', function () {
+describe('workspaceRooms', function () {
 
   var ASSETS;
 
@@ -23,16 +23,18 @@ describe('workspaceRoomManager', function () {
    * these tests are very sensitive
    */
   beforeEach(function () {
+    aux.enableHMocks();
+
     return aux.setup().then((assets) => {
       ASSETS = assets;
 
       var server = aux.createTeardownServer();
 
-      ASSETS.hDev = createAdminApp(aux.genOptions());
-      ASSETS.hDevURI = 'http://localhost:4000';
+      ASSETS.hWorkspace = hWorkspace(aux.genOptions());
+      ASSETS.hWorkspaceURI = 'http://localhost:4000';
 
       return Bluebird.all([
-        ASSETS.hDev.attach(server),
+        ASSETS.hWorkspace.attach(server),
         new Bluebird((resolve, reject) => {
           server.listen(4000, resolve);
         })
@@ -40,14 +42,7 @@ describe('workspaceRoomManager', function () {
     })
     .then(() => {
       // create a workspace
-      ASSETS.projectApp.respondWith('/project/:identifier/versions|get', 'success');
-      ASSETS.projectApp.respondWith('/project/:identifier/version/:versionId/signed-url|get', 'success');
-      ASSETS.projectApp.respondWith('/auxiliary-routes/file-download|get', 'success');
-
-      return ASSETS.hDev.controllers.workspace.create('TOKEN', {
-        code: ASSETS.projectApp.mockResponseData.projectCode,
-        projectId: ASSETS.projectApp.mockResponseData.projectId,
-      });
+      return ASSETS.hWorkspace.controllers.workspace.create('username', 'project-1-id');
     })
     .then((workspace) => {
       ASSETS.workspace = workspace;
@@ -59,42 +54,38 @@ describe('workspaceRoomManager', function () {
   });
 
   it('only one workspace room should be created for each workspace, no matter how many socket connections use it', function () {
-    ASSETS.projectApp.respondWith('/project/:identifier/verify-permissions|get', 'success');
-    ASSETS.projectApp.respondWith('/project/:identifier|get', 'success');
-
-    const workspaceCode = ASSETS.workspace.code;
     const projectRoot = ASSETS.tmpRootPath + '/' + ASSETS.workspace._id;
 
-    const token = 'TOKEN';
+    const token = 'VALID_TOKEN';
 
     var client1 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     var client2 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     var client3 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI,
+      serverURI: ASSETS.hWorkspaceURI,
     });
 
     return Promise.all([
-      client1.connect(token, workspaceCode),
-      client2.connect(token, workspaceCode),
-      client3.connect(token, workspaceCode),
+      client1.connect(token, 'project-1-code'),
+      client2.connect(token, 'project-1-code'),
+      client3.connect(token, 'project-1-code'),
     ])
     .then(() => {
       // there should be only one workspace room
-      Object.keys(ASSETS.hDev.services.workspaceRoomManager.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
         .length.should.equal(1);
 
       // the workspaceRoom should be an object
-      var workspaceRoom = ASSETS.hDev.services
-        .workspaceRoomManager.workspaceRooms[ASSETS.workspace.code];
+      var workspaceRoom = ASSETS.hWorkspace.services
+        .workspaceRooms.workspaceRooms[ASSETS.workspace._id];
       should(workspaceRoom).be.instanceof(Object);
 
       // and it should have 3 sockets connected to it
@@ -113,44 +104,41 @@ describe('workspaceRoomManager', function () {
     });
   });
 
-  it('upon socket disconnection, the workspaceRoomManager should check if the workspaceRoom is still required and clean up if necessary', function () {
-    ASSETS.projectApp.respondWith('/project/:identifier/verify-permissions|get', 'success');
-    ASSETS.projectApp.respondWith('/project/:identifier|get', 'success');
+  it('upon socket disconnection, the workspaceRooms should check if the workspaceRoom is still required and clean up if necessary', function () {
 
-    const workspaceCode = ASSETS.workspace.code;
     const projectRoot = ASSETS.tmpRootPath + '/' + ASSETS.workspace._id;
 
-    const token = 'TOKEN';
+    const token = 'VALID_TOKEN';
     const permissionScopes = ['read'];
 
     var client1 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     var client2 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     var client3 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI,
+      serverURI: ASSETS.hWorkspaceURI,
     });
 
     return Promise.all([
-      client1.connect(token, workspaceCode),
-      client2.connect(token, workspaceCode),
-      client3.connect(token, workspaceCode),
+      client1.connect(token, 'project-1-code'),
+      client2.connect(token, 'project-1-code'),
+      client3.connect(token, 'project-1-code'),
     ])
     .then(() => {
-      var workspaceRoom = ASSETS.hDev.services
-        .workspaceRoomManager.workspaceRooms[ASSETS.workspace._id];
+      var workspaceRoom = ASSETS.hWorkspace.services
+        .workspaceRooms.workspaceRooms[ASSETS.workspace._id];
 
       should(workspaceRoom).be.instanceof(Object);
 
       // there should be only one workspaceRoom
-      Object.keys(ASSETS.hDev.services.workspaceRoomManager.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
         .length.should.equal(1);
       
       // disconnect one client
@@ -161,7 +149,7 @@ describe('workspaceRoomManager', function () {
     .then(() => {
       // nothing should have happened to the workspaceRooms as there are still other
       // two clients connected to the project
-      Object.keys(ASSETS.hDev.services.workspaceRoomManager.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
         .length.should.equal(1);
 
       // disconnect all clients
@@ -172,49 +160,45 @@ describe('workspaceRoomManager', function () {
     })
     .then(() => {
       // the workspaceRoom should have been completely removed
-      Object.keys(ASSETS.hDev.services.workspaceRoomManager.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
         .length.should.equal(0);
     });
   });
 
   it('mass connection and disconnection', function () {
-    ASSETS.projectApp.respondWith('/project/:identifier/verify-permissions|get', 'success');
-    ASSETS.projectApp.respondWith('/project/:identifier|get', 'success');
-
-    const workspaceCode = ASSETS.workspace.code;
     const projectRoot = ASSETS.tmpRootPath + '/' + ASSETS.workspace._id;
 
-    const token = 'TOKEN';
+    const token = 'VALID_TOKEN';
     const permissionScopes = ['read'];
 
     var client1 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     var client2 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI
+      serverURI: ASSETS.hWorkspaceURI
     });
 
     var client3 = new AuthenticatedClient({
       apiVersion: '0.0.0',
-      serverURI: ASSETS.hDevURI,
+      serverURI: ASSETS.hWorkspaceURI,
     });
 
     return Promise.all([
-      client1.connect(token, workspaceCode),
-      client2.connect(token, workspaceCode),
-      client3.connect(token, workspaceCode),
+      client1.connect(token, 'project-1-code'),
+      client2.connect(token, 'project-1-code'),
+      client3.connect(token, 'project-1-code'),
     ])
     .then(() => {
-      var workspaceRoom = ASSETS.hDev.services
-        .workspaceRoomManager.workspaceRooms[ASSETS.workspace._id];
+      var workspaceRoom = ASSETS.hWorkspace.services
+        .workspaceRooms.workspaceRooms[ASSETS.workspace._id];
 
       should(workspaceRoom).be.instanceof(Object);
 
       // there should be only one resource pack
-      Object.keys(ASSETS.hDev.services.workspaceRoomManager.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
         .length.should.equal(1);
       
       // disconnect one client
@@ -225,7 +209,7 @@ describe('workspaceRoomManager', function () {
     .then(() => {
       // nothing should have happened to the rooms as there are still other
       // two clients connected to the project
-      Object.keys(ASSETS.hDev.services.workspaceRoomManager.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
         .length.should.equal(1);
 
       // disconnect all clients
@@ -236,7 +220,7 @@ describe('workspaceRoomManager', function () {
     })
     .then(() => {
       // the resources should have been completely removed
-      Object.keys(ASSETS.hDev.services.workspaceRoomManager.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
         .length.should.equal(0);
     });
   });

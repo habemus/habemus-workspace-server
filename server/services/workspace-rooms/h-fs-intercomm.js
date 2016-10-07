@@ -142,10 +142,6 @@ HFsIntercomm.prototype.loadResponseData = function (request, response, result) {
  * @param  {IPC error} error
  */
 HFsIntercomm.prototype.loadErrorData = function (request, response, error) {
-
-  console.log(error);
-  console.log(error.stack);
-
   response.load(error, {
     name: true,
     option: true,

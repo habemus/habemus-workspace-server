@@ -7,8 +7,6 @@ const http   = require('http');
 const should = require('should');
 const fse    = require('fs-extra');
 const Bluebird = require('bluebird');
-const mockery = require('mockery');
-const mockPrivateHProject = require('h-project-client/mock/private');
 
 // own dependencies
 const AuthenticatedClient = require('h-workspace-client/authenticated');
@@ -23,38 +21,7 @@ describe('AuthenticatedClient#connect', function () {
 
   beforeEach(function () {
 
-    mockery.enable({
-      warnOnReplace: false,
-      warnOnUnregistered: false,
-      useCleanCache: true
-    });
-
-    // mock h-project/client/private
-    mockery.registerMock(
-      'h-project-client/private',
-      mockPrivateHProject({
-        data: require('../../aux/h-project-mock-data'),
-      })
-    );
-
-    function PrivateHAccountMock() {}
-    PrivateHAccountMock.prototype.decodeToken = function (authToken, token) {
-      // console.log('decodeToken', authToken, token);
-
-      if (token === 'VALID_TOKEN') {
-        return Bluebird.resolve({
-          sub: 'user-1-id',
-          username: 'user1username',
-        });
-      } else {
-        return Bluebird.reject(new Error('Unauthorized'));
-      }
-    };
-
-    mockery.registerMock(
-      'h-account-client/private',
-      PrivateHAccountMock
-    );
+    aux.enableHMocks();
 
     return aux.setup().then((assets) => {
       ASSETS = assets;
@@ -80,8 +47,6 @@ describe('AuthenticatedClient#connect', function () {
   });
 
   afterEach(function () {
-    mockery.disable();
-
     return aux.teardown();
   });
 

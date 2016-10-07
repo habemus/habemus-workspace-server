@@ -7,8 +7,6 @@ const http   = require('http');
 const should = require('should');
 const fse    = require('fs-extra');
 const Bluebird = require('bluebird');
-const mockery = require('mockery');
-const mockPrivateHProject = require('h-project-client/mock/private');
 
 // own dependencies
 const AnonymousClient     = require('h-workspace-client/anonymous');
@@ -24,34 +22,7 @@ describe('AnonymousClient#connect (anonymous)', function () {
 
   beforeEach(function () {
 
-    mockery.enable({
-      warnOnReplace: false,
-      warnOnUnregistered: false,
-      useCleanCache: true
-    });
-
-    // mock h-project/client/private
-    mockery.registerMock(
-      'h-project-client/private',
-      mockPrivateHProject({
-        data: require('../../aux/h-project-mock-data'),
-      })
-    );
-
-    function PrivateHAccountMock() {}
-    PrivateHAccountMock.prototype.decodeToken = function (authToken, token) {
-      console.log('decodeToken', authToken, token);
-
-      return Bluebird.resolve({
-        sub: 'user-1-id',
-        username: 'user1username',
-      });
-    };
-
-    mockery.registerMock(
-      'h-account-client/private',
-      PrivateHAccountMock
-    );
+    aux.enableHMocks();
 
     return aux.setup().then((assets) => {
       ASSETS = assets;
@@ -78,8 +49,6 @@ describe('AnonymousClient#connect (anonymous)', function () {
   });
 
   afterEach(function () {
-    mockery.disable();
-    
     return aux.teardown();
   });
 
@@ -115,7 +84,7 @@ describe('AnonymousClient#connect (anonymous)', function () {
     });
 
     // connect an authenticated client
-    return authenticatedClient.connect('TOKEN', 'project-1-code')
+    return authenticatedClient.connect('VALID_TOKEN', 'project-1-code')
       .then(() => {
         console.log('authenticated-client connected');
         
