@@ -1,0 +1,9 @@
+node_modules
+*.log
+coverage
+
+tmp
+.tmp
+.DS_Store
+
+dist

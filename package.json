@@ -1,0 +1,37 @@
+{
+  "name": "h-workspace",
+  "version": "0.0.0",
+  "description": "workspaces",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@habemus/url-whitelist": "^1.0.0",
+    "bluebird": "^3.4.6",
+    "cache-promise-fn": "0.0.0",
+    "debug": "^2.2.0",
+    "express": "^4.14.0",
+    "h-account-client": "git+ssh://git@bitbucket.org/habemus-tutti/h-account-client.git",
+    "h-fs": "git+ssh://git@bitbucket.org/habemus-tutti/h-fs.git",
+    "h-project-client": "git+ssh://git@bitbucket.org/habemus-tutti/h-project-client.git",
+    "intercomm": "^1.0.0-alpha.2",
+    "json-message": "^2.0.0-beta.5",
+    "mongoose": "^4.6.3",
+    "redis": "^2.6.2",
+    "root-path-builder": "git+ssh://git@bitbucket.org/habemus-tutti/root-path-builder.git",
+    "socket.io": "^1.5.0",
+    "uuid": "^2.0.3",
+    "zip-util": "git+ssh://git@bitbucket.org/habemus-tutti/zip-util.git"
+  },
+  "devDependencies": {
+    "fs-extra": "^0.30.0",
+    "gulp": "^3.9.1",
+    "mockery": "^1.7.0",
+    "mongodb": "^2.2.10",
+    "server-destroy": "^1.0.1",
+    "should": "^11.1.0"
+  }
+}
