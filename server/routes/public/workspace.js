@@ -38,7 +38,7 @@ module.exports = function (app, options) {
     }
   );
 
-  app.get('/project/:projectIdentifier/workspace',
+  app.get('/project/:identifier/workspace',
     app.middleware.authenticate(authenticateOptions),
 
     // we must first load the workspace
@@ -47,7 +47,7 @@ module.exports = function (app, options) {
     // middleware requires a `projectId`
     app.middleware.loadWorkspace({
       identifier: function (req) {
-        return req.params.projectIdentifier;
+        return req.params.identifier;
       },
     }),
     app.middleware.verifyProjectPermissions({

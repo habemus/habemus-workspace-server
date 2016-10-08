@@ -16,6 +16,7 @@
     "cors": "^2.8.1",
     "debug": "^2.2.0",
     "express": "^4.14.0",
+    "express-jwt": "^5.1.0",
     "h-account-client": "git+ssh://git@bitbucket.org/habemus-tutti/h-account-client.git",
     "h-fs": "git+ssh://git@bitbucket.org/habemus-tutti/h-fs.git",
     "h-project-client": "git+ssh://git@bitbucket.org/habemus-tutti/h-project-client.git",

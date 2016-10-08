@@ -77,6 +77,14 @@ module.exports = function (options) {
      **/
     require('./routes/public')(app, options);
 
+    if (options.enablePrivateAPI) {
+      if (!options.privateAPISecret) {
+        throw new Error('privateAPISecret is required for enablePrivateAPI = true');
+      }
+      
+      require('./routes/private')(app, options);
+    }    
+
     // express error-handling
     require('./error-handlers/h-workspace-error')(app, options);
 
