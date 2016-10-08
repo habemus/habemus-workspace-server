@@ -33,6 +33,9 @@ exports.defaultOptions = {
   hAccountURI: 'http://localhost:9000',
   hAccountToken: 'h-account-token',
 
+  enablePrivateAPI: true,
+  privateAPISecret: 'test-secret',
+
   workspacesFsRoot: TMP_ROOT_PATH,
   corsWhitelist: '*',
 };

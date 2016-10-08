@@ -60,6 +60,8 @@ module.exports = function (options) {
 
     app.middleware.authenticate =
       require('./middleware/authenticate').bind(null, app);
+    app.middleware.authenticatePrivate =
+      require('./middleware/authenticate-private').bind(null, app);
     app.middleware.loadWorkspace =
       require('./middleware/load-workspace').bind(null, app);
     app.middleware.cors =
