@@ -56,7 +56,9 @@ describe('server authentication', function () {
   });
 
   it('basic manual authentication', function (done) {
-    var socket = socketIOClient(ASSETS.hWorkspaceURI);
+    var socket = socketIOClient(ASSETS.hWorkspaceURI, {
+      path: '/public/socket.io',
+    });
 
     socket.on('connect', function () {
       socket.emit('authenticate', {
@@ -83,7 +85,9 @@ describe('server authentication', function () {
 
     it('should require a token', function (done) {
 
-      var socket = socketIOClient(ASSETS.hWorkspaceURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI, {
+        path: '/public/socket.io',
+      });
 
       socket.on('connect', function () {
         socket.emit('authenticate', {
@@ -111,7 +115,9 @@ describe('server authentication', function () {
 
     it('should require the `code`', function (done) {
 
-      var socket = socketIOClient(ASSETS.hWorkspaceURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI, {
+        path: '/public/socket.io',
+      });
 
       socket.on('connect', function () {
         socket.emit('authenticate', {
@@ -137,7 +143,9 @@ describe('server authentication', function () {
     });
     
     it.skip('should fail if the projectApp does not authorize the token permissions', function (done) {
-      var socket = socketIOClient(ASSETS.hWorkspaceURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI, {
+        path: '/public/socket.io',
+      });
 
       socket.on('connect', function () {
         socket.emit('authenticate', {
@@ -166,7 +174,9 @@ describe('server authentication', function () {
 
       const workspaceCode = ASSETS.workspace.code;
 
-      var socket = socketIOClient(ASSETS.hWorkspaceURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI, {
+        path: '/public/socket.io',
+      });
 
       socket.on('connect', function () {
         socket.emit('message', {
@@ -192,7 +202,9 @@ describe('server authentication', function () {
     it('should disconnect clients that are not authenticated after `authTimeout` ms', function (done) {
       this.timeout(6000);
 
-      var socket = socketIOClient(ASSETS.hWorkspaceURI);
+      var socket = socketIOClient(ASSETS.hWorkspaceURI, {
+        path: '/public/socket.io',
+      });
 
       socket.on('connect', function () {
 

@@ -65,29 +65,7 @@ var workspaceSchema = new Schema({
 
 // takes the connection and options and returns the model
 module.exports = function (conn, app, options) {
-
-  const WORKSPACE_HOST_URL = options.workspaceHostURL;
-
-  // validate the workspaceHostURL
-  var parsed = url.parse(WORKSPACE_HOST_URL);
-  if (!parsed.host || !parsed.protocol) {
-    throw new Error('invalid workspaceHostURL: ' + WORKSPACE_HOST_URL);
-  }
-
-  workspaceSchema.virtual('previewURL').get(function () {
-    var parsed = url.parse(WORKSPACE_HOST_URL);
-    
-    // modify the host by adding a subdomain equivalent to the
-    // projectCode
-    parsed.host = this.code + '.' + parsed.host;
-
-    // to see how node.js url format works:
-    // https://nodejs.org/api/url.html#url_url_format_urlobject
-
-    // return the formatted url
-    return url.format(parsed);
-  });
-
+  
   var Workspace = conn.model('Workspace', workspaceSchema);
 
   return Workspace;

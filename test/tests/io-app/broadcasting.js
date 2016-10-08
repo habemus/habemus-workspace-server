@@ -31,7 +31,7 @@ describe('event broadcasting', function () {
       var server = aux.createTeardownServer();
 
       ASSETS.hWorkspace = hWorkspace(aux.genOptions());
-      ASSETS.hWorkspaceURI = 'http://localhost:4000';
+      ASSETS.hWorkspaceURI = 'http://localhost:4000/public';
 
       return Bluebird.all([
         ASSETS.hWorkspace.attach(server),

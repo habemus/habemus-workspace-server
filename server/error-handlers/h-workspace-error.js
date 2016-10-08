@@ -47,9 +47,6 @@ module.exports = function (app, options) {
           res.status(404).json(msg);
           break;
         default:
-
-          console.log('==============')
-          console.log(err);
           next(err);
           break;
       }

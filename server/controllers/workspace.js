@@ -108,45 +108,6 @@ module.exports = function (app, options) {
   };
 
   /**
-   * Retrieves the workspace's preview url
-   * 
-   * @param  {Workspace} workspace
-   * @return {String}
-   */
-  workspaceCtrl.getWorkspacePreviewURL = function (workspace) {
-    if (!(workspace instanceof Workspace)) {
-      return Bluebird.reject(new errors.InvalidOption('workspace', 'required'));
-    }
-
-    // validate the workspaceHostURL
-    var parsed = url.parse(WORKSPACE_HOST_URL);
-    if (!parsed.host || !parsed.protocol) {
-      throw new Error('invalid workspaceHostURL: ' + WORKSPACE_HOST_URL);
-    }
-
-    // retrieve the project related to the workspace
-    return app.services.hProject.get(
-      H_PROJECT_TOKEN,
-      workspace.projectId,
-      {
-        byCode: false
-      }
-    )
-    .then((project) => {
-
-      // modify the host by adding a subdomain equivalent to the
-      // projectCode
-      parsed.host = project.code + '.' + parsed.host;
-
-      // to see how node.js url format works:
-      // https://nodejs.org/api/url.html#url_url_format_urlobject
-
-      // return the formatted url
-      return url.format(parsed);
-    });
-  };
-
-  /**
    * Loads the project's files given the workspace and the version
    * 
    * @param  {Workspace} workspace

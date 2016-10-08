@@ -12,8 +12,6 @@ module.exports = function (app, options) {
   publicApp.middleware  = app.middleware;
   publicApp.services    = app.services;
 
-  console.log(options.corsWhitelist);
-
   // setup cors middleware only onto public app
   // and before other routes
   var _cors = app.middleware.cors({

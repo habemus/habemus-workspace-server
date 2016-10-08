@@ -71,8 +71,6 @@ module.exports = function (app, options) {
       }
     })
     .catch((err) => {
-      console.log(err);
-
       // prohibit
       next(err);
     });
