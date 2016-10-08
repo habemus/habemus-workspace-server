@@ -9,8 +9,8 @@ const fse    = require('fs-extra');
 const Bluebird = require('bluebird');
 
 // own dependencies
-const AnonymousClient     = require('h-workspace-client/anonymous');
-const AuthenticatedClient = require('h-workspace-client/authenticated');
+const AnonymousClient     = require('h-workspace-client/public/anonymous');
+const AuthenticatedClient = require('h-workspace-client/public/authenticated');
 const hWorkspace = require('../../../server');
 
 // auxiliary
