@@ -34,7 +34,6 @@ exports.defaultOptions = {
   hAccountToken: 'h-account-token',
 
   workspacesFsRoot: TMP_ROOT_PATH,
-  workspaceHostURL: 'http://habemus.website',
   corsWhitelist: '*',
 };
 

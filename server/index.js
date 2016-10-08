@@ -16,7 +16,6 @@ module.exports = function (options) {
   if (!options.hAccountToken) { throw new Error('hAccountToken is required'); }
 
   if (!options.workspacesFsRoot) { throw new Error('workspacesFsRoot is required'); }
-  if (!options.workspaceHostURL) { throw new Error('workspaceHostURL is required'); }
   
   /**
    * The main app is an express application
