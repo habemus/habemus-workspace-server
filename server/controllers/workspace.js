@@ -233,6 +233,15 @@ module.exports = function (app, options) {
     )
     .then((project) => {
       return workspaceCtrl.getByProjectId(project._id);
+    })
+    .catch((err) => {
+      // we must handle this error manually as the `NotFound` error
+      // is not from h-workspace but from h-project-client
+      if (err.name === 'NotFound') {
+        return Bluebird.reject(new errors.NotFound());
+      } else {
+        return Bluebird.reject(err);
+      }
     });
   };
 
