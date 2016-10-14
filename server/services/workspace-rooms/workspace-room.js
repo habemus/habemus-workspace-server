@@ -133,6 +133,11 @@ WorkspaceRoom.prototype.setup = function () {
  * @return {Bluebird}
  */
 WorkspaceRoom.prototype.destroy = function () {
+  // events are broadcasted to the whole room
+  this.ioApp.in(this.ioRoomId).emit(SHARED_CONSTATNS.ROOM_DESTROYED_EVENT);
+
+  // TODO: disconnect all sockets
+  // and tie all h-fs-intercomm operations to a workspace's version
 
   return Bluebird.resolve();
 };

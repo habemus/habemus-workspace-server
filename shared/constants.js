@@ -33,6 +33,13 @@ exports.AUTH_SUCCESS_EVENT = 'authenticated';
  */
 exports.AUTH_ERROR_EVENT = 'authentication-error';
 
+/**
+ * The event name for signaling that a room has been destroyed
+ * and that clients should do a full refresh in order to reconnect.
+ * @type {String}
+ */
+exports.ROOM_DESTROYED_EVENT = 'destroy';
+
 
 exports.AUTH_TIMEOUT_EVENT = 'authentication-timeout';
 

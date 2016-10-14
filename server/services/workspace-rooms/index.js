@@ -92,6 +92,15 @@ WorkspaceRoomManager.prototype.createWorkspaceRoom = function (workspace) {
 };
 
 /**
+ * Retrieves the workspace rooom by the workspace's _id
+ * @param  {String} workspaceId
+ * @return {WorkspaceRoom}
+ */
+WorkspaceRoomManager.prototype.getWorkspaceRoom = function (workspaceId) {
+  return Bluebird.resolve(this.workspaceRooms[workspaceId]);
+};
+
+/**
  * Destroys the workspace room identified by the given workspaceId
  * @param  {String} workspaceId
  */
@@ -109,12 +118,19 @@ WorkspaceRoomManager.prototype.destroyWorkspaceRoom = function (workspaceId) {
 };
 
 /**
- * Retrieves the workspace rooom by the workspace's _id
+ * Checks if the room exists. If exists, destroys it.
+ * Otherwise, simply returns.
+ * 
  * @param  {String} workspaceId
- * @return {WorkspaceRoom}
+ * @return {Bluebird}
  */
-WorkspaceRoomManager.prototype.getWorkspaceRoom = function (workspaceId) {
-  return Bluebird.resolve(this.workspaceRooms[workspaceId]);
+WorkspaceRoomManager.prototype.ensureWorkspaceRoomDestroyed = function (workspaceId) {
+  return this.getWorkspaceRoom(workspaceId)
+    .then((room) => {
+      if (room) {
+        return this.destroyWorkspaceRoom(workspaceId);
+      }
+    });
 };
 
 /**
