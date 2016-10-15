@@ -218,5 +218,3 @@ exports.teardown = function () {
     TEARDOWN_CALLBACKS = [];
   });
 };
-
-exports.AFTEREACH_TIMEOUT = 0;

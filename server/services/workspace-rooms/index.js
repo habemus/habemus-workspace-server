@@ -78,8 +78,6 @@ WorkspaceRoomManager.prototype._handleWorkspaceEvent = function (eventName, work
   switch (eventName) {
     case CONSTANTS.WORKSPACE_EVENTS.UPDATE_STARTED:
 
-      console.log('workspace-update-started', workspaceId);
-
       this.getRoom(workspaceId)
         .then((room) => {
           if (room) {
@@ -89,8 +87,6 @@ WorkspaceRoomManager.prototype._handleWorkspaceEvent = function (eventName, work
 
       break;
     case CONSTANTS.WORKSPACE_EVENTS.UPDATE_FINISHED:
-
-      console.log('workspace-update-finished', workspaceId);
 
       this.getRoom(workspaceId)
         .then((room) => {
@@ -105,8 +101,6 @@ WorkspaceRoomManager.prototype._handleWorkspaceEvent = function (eventName, work
 
       break;
     case CONSTANTS.WORKSPACE_EVENTS.UPDATE_FAILED:
-
-      console.log('workspace-update-failed', workspaceId);
 
       this.getRoom(workspaceId)
         .then((room) => {
