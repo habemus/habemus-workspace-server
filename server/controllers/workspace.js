@@ -119,8 +119,7 @@ module.exports = function (app, options) {
     }
 
     // build the workspace's path
-    var workspacePath = 
-      app.services.workspacesRoot.prependTo(workspace._id);
+    var workspacePath = app.services.workspacesRoot.prependTo(workspace._id);
 
     var _workspace;
 
@@ -130,10 +129,12 @@ module.exports = function (app, options) {
       workspace._id.toString()
     );
 
-    return zipUtil.zipDownload(
-      version.srcSignedURL,
-      workspacePath
-    )
+    return rimrafAsync(workspacePath).then(() => {
+      return zipUtil.zipDownload(
+        version.srcSignedURL,
+        workspacePath
+      )
+    })
     .then(() => {
       // save the versionCode to the workspace database entry
       workspace.projectVersionCode = version.code;
