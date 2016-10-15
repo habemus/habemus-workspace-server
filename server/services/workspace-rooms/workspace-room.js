@@ -134,7 +134,32 @@ WorkspaceRoom.prototype.setup = function () {
  */
 WorkspaceRoom.prototype.destroy = function () {
 
-  return Bluebird.resolve();
+  this.socketBroadcast(SHARED_CONSTATNS.ROOM_DESTROYED_EVENT)
+
+  // TODO: disconnect all sockets
+  // and tie all h-fs-intercomm operations to a workspace's version
+
+  return this.listLocalSockets()
+    .then((localSocketIds) => {
+
+      var localSockets = localSocketIds.map((socketId) => {
+        return this.ioApp.sockets.connected[socketId];
+      });
+
+      return localSockets.map((socket) => {
+        return socket.disconnect();
+      });
+    });
+};
+
+/**
+ * Emits an event to all sockets connected to this room.
+ * @param  {String} eventName
+ * @param  {*} data
+ */
+WorkspaceRoom.prototype.socketBroadcast = function (eventName, data) {
+  // events are broadcasted to the whole room
+  this.ioApp.in(this.ioRoomId).emit(eventName, data);
 };
 
 /**
@@ -243,8 +268,7 @@ WorkspaceRoom.prototype._routeAnonymousSocketMessage = function (socket, message
   switch (message.type) {
     case 'rpc-request':
       
-      console.log('rpc-request received at anonymous socket');
-
+      console.warn('rpc-request received at anonymous socket');
 
       break;
     case 'response':

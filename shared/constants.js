@@ -33,6 +33,22 @@ exports.AUTH_SUCCESS_EVENT = 'authenticated';
  */
 exports.AUTH_ERROR_EVENT = 'authentication-error';
 
+/**
+ * The event name for signaling that a room has been destroyed
+ * and that clients should do a full refresh in order to reconnect.
+ * @type {String}
+ */
+exports.ROOM_DESTROYED_EVENT = 'room-destroyed';
+
+/**
+ * Hash of workspace events
+ * @type {Object}
+ */
+exports.WORKSPACE_EVENTS = {
+  UPDATE_STARTED: 'workspace-update-started',
+  UPDATE_FINISHED: 'workspace-update-finished',
+  UPDATE_FAILED: 'workspace-update-failed'
+};
 
 exports.AUTH_TIMEOUT_EVENT = 'authentication-timeout';
 

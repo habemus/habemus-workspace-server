@@ -10,7 +10,6 @@ module.exports = function (app, options) {
     require('./redis')(app, options),
     require('./h-project')(app, options),
     require('./h-account')(app, options),
-    require('./workspace-rooms')(app, options),
     require('./cors')(app, options),
     require('./workspace-setup-manager')(app, options),
   ])
@@ -24,9 +23,16 @@ module.exports = function (app, options) {
     app.services.redis = services[3];
     app.services.hProject = services[4];
     app.services.hAccount = services[5];
-    app.services.workspaceRooms = services[6];
-    app.services.cors = services[7];
-    app.services.workspaceSetupManager = services[8];
+    app.services.cors = services[6];
+    app.services.workspaceSetupManager = services[7];
+
+    return Bluebird.all([
+      require('./workspace-rooms')(app, options),
+    ])
+  })
+  .then((services) => {
+
+    app.services.workspaceRooms = services[0];
 
     // ensure nothing is returned by the promise
     return;

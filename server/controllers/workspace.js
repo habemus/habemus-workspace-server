@@ -12,7 +12,8 @@ const zipUtil    = require('zip-util');
 Bluebird.promisifyAll(fs);
 const rimrafAsync = Bluebird.promisify(rimraf);
 
-const errors = require('../../shared/errors');
+const errors    = require('../../shared/errors');
+const CONSTANTS = require('../../shared/constants');
 
 module.exports = function (app, options) {
 
@@ -22,17 +23,6 @@ module.exports = function (app, options) {
    * @type {String}
    */
   const H_PROJECT_TOKEN = options.hProjectToken;
-
-  /**
-   * URL of the workspace server host.
-   * {{ projectCode }}.some.host.com
-   *
-   * shall serve the workspace's files
-   * 
-   * @type {String}
-   */
-  const WORKSPACE_HOST_URL = options.workspaceHostURL;
-
 
   const Workspace = app.services.mongoose.models.Workspace;
 
@@ -129,18 +119,46 @@ module.exports = function (app, options) {
     }
 
     // build the workspace's path
-    var workspacePath = 
-      app.services.workspacesRoot.prependTo(workspace._id);
+    var workspacePath = app.services.workspacesRoot.prependTo(workspace._id);
 
-    return zipUtil.zipDownload(
-      version.srcSignedURL,
-      workspacePath
-    )
+    var _workspace;
+
+    // publish `workspace-update-started`
+    app.services.redis.pub.publishAsync(
+      CONSTANTS.WORKSPACE_EVENTS.UPDATE_STARTED,
+      workspace._id.toString()
+    );
+
+    return rimrafAsync(workspacePath).then(() => {
+      return zipUtil.zipDownload(
+        version.srcSignedURL,
+        workspacePath
+      )
+    })
     .then(() => {
       // save the versionCode to the workspace database entry
       workspace.projectVersionCode = version.code;
 
       return workspace.save();
+    })
+    .then((workspace) => {
+      _workspace = workspace;
+      // publish `workspace-update-finished`
+      
+      return app.services.redis.pub.publishAsync(
+        CONSTANTS.WORKSPACE_EVENTS.UPDATE_FINISHED,
+        workspace._id.toString()
+      );
+    })
+    .then(() => {
+      return _workspace;
+    })
+    .catch((err) => {
+      app.services.redis.pub.publishAsync(
+        CONSTANTS.WORKSPACE_EVENTS.UPDATE_FAILED
+      );
+
+      return Bluebird.reject(err);
     });
   };
 
