@@ -105,7 +105,7 @@ module.exports = function (app, options) {
         // and let the socket join it
         return app.services
           .workspaceRooms
-          .ensureWorkspaceRoom(_workspace);
+          .ensureRoom(_workspace);
       })
       .then((workspaceRoom) => {
         return workspaceRoom.join(
@@ -145,7 +145,7 @@ module.exports = function (app, options) {
     return app.controllers.workspace.getByProjectCode(projectCode)
       .then((workspace) => {
         // retrieve the workspace's room
-        return app.services.workspaceRooms.getWorkspaceRoom(workspace._id);
+        return app.services.workspaceRooms.getRoom(workspace._id);
       })
       .then((workspaceRoom) => {
 

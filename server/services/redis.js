@@ -4,15 +4,10 @@ const Bluebird = require('bluebird');
 Bluebird.promisifyAll(redis.RedisClient.prototype);
 Bluebird.promisifyAll(redis.Multi.prototype);
 
-module.exports = function (app, options) {
-
-  var redisService = {};
-  
+function _createRedisClient(redisURI) {
   return new Bluebird((resolve, reject) => {
-    var redisClient = redis.createClient(options.redisURI);
+    var redisClient = redis.createClient(redisURI);
 
-    redisService.client = redisClient;
-    
     redisClient.once('ready', _resolve);
     redisClient.once('error', _reject);
 
@@ -23,7 +18,7 @@ module.exports = function (app, options) {
 
     function _resolve () {
       off();
-      resolve();
+      resolve(redisClient);
     }
 
     function _reject (err) {
@@ -31,7 +26,27 @@ module.exports = function (app, options) {
       reject(err);
     }
   })
-  .then(() => {
+};
+
+module.exports = function (app, options) {
+
+  var redisService = {};
+
+  /**
+   * Redis requires using separate connections for publishers
+   * and subscribers.
+   *
+   * http://stackoverflow.com/questions/22668244/should-i-use-separate-connections-for-pub-and-sub-with-redis
+   */
+  return Bluebird.all([
+    _createRedisClient(options.redisURI),
+    _createRedisClient(options.redisURI),
+  ])
+  .then((clients) => {
+
+    redisService.pub = clients[0];
+    redisService.sub = clients[1];
+
     // TODO: handle afterward errors
     return redisService;
   });

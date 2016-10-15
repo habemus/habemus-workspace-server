@@ -105,14 +105,6 @@ module.exports = function (app, options) {
 
       workspaceCtrl.loadLatestVersion(workspace)
         .then((workspace) => {
-
-          // if there is any workspaceRoom referencing
-          // the workspace, it has to be destroyed, in order
-          // to avoid any pending connections from editing 
-          // an old version of the files
-          return app.services.workspaceRooms.ensureWorkspaceRoomDestroyed(workspace._id);
-        })
-        .then(() => {
           var msg = app.services.messageAPI.item(workspace, interfaces.WORKSPACE_DATA);
           res.json(msg);
         })

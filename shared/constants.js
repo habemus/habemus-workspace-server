@@ -38,8 +38,17 @@ exports.AUTH_ERROR_EVENT = 'authentication-error';
  * and that clients should do a full refresh in order to reconnect.
  * @type {String}
  */
-exports.ROOM_DESTROYED_EVENT = 'destroy';
+exports.ROOM_DESTROYED_EVENT = 'room-destroyed';
 
+/**
+ * Hash of workspace events
+ * @type {Object}
+ */
+exports.WORKSPACE_EVENTS = {
+  UPDATE_STARTED: 'workspace-update-started',
+  UPDATE_FINISHED: 'workspace-update-finished',
+  UPDATE_FAILED: 'workspace-update-failed'
+};
 
 exports.AUTH_TIMEOUT_EVENT = 'authentication-timeout';
 
