@@ -9,7 +9,7 @@ const Bluebird = require('bluebird');
 
 // own dependencies
 const hWorkspace = require('../../../server');
-const AuthenticatedClient = require('h-workspace-client/authenticated');
+const AuthenticatedClient = require('h-workspace-client/public/authenticated');
 
 // auxiliary
 const aux = require('../../aux');
