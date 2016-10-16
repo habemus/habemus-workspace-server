@@ -111,4 +111,38 @@ module.exports = function (app, options) {
         .catch(next);
     }
   );
+
+  /**
+   * Creates a project version using the files in the workspace
+   * and updates the workspace's projectVersionCode attribute
+   * to the version created.
+   */
+  app.post('/project/:identifier/workspace/create-project-version',
+    app.middleware.authenticate(authenticateOptions),
+    app.middleware.loadWorkspace({
+      identifier: function (req) {
+        return req.params.identifier;
+      },
+    }),
+    app.middleware.verifyProjectPermissions({
+      hProjectToken: options.hProjectToken,
+      permissions: [
+        'read',
+        'update',
+      ],
+      projectId: function (req) {
+        return req.workspace.projectId;
+      }
+    }),
+    function (req, res, next) {
+      var workspace = req.workspace;
+
+      workspaceCtrl.createProjectVersion(workspace)
+        .then((workspace) => {
+          var msg = app.services.messageAPI.item(workspace, interfaces.WORKSPACE_DATA);
+          res.json(msg);
+        })
+        .catch(next);
+    }
+  );
 };

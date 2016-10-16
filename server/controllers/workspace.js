@@ -7,6 +7,7 @@ const superagent = require('superagent');
 const debug      = require('debug')('h-dev-project');
 const rimraf     = require('rimraf');
 const zipUtil    = require('zip-util');
+const tmp        = require('tmp');
 
 // promisify
 Bluebird.promisifyAll(fs);
@@ -159,6 +160,61 @@ module.exports = function (app, options) {
       );
 
       return Bluebird.reject(err);
+    });
+  };
+
+  /**
+   * Creates a projectVersion from the workspace's files
+   * 
+   * @param  {Workspace} workspace
+   * @return {Bluebird -> ProjectVersion}
+   */
+  workspaceCtrl.createProjectVersion = function (workspace) {
+    if (!(workspace instanceof Workspace)) {
+      return Bluebird.reject(new errors.InvalidOption('workspace', 'required'));
+    }
+
+    var _tmpFile;
+
+    return new Bluebird((resolve, reject) => {
+
+      // build the workspace's path
+      var workspacePath = app.services.workspacesRoot.prependTo(workspace._id);
+
+      // TBD: eliminate the need for a temporary file.
+      // we are having lots of trouble in creating a
+      // write stream using request module.
+
+      tmp.file((err, filePath, fd, cleanupCallback) => {
+        var writeStream = fs.createWriteStream(filePath);
+        zipUtil.zip(workspacePath + '/**/*')
+          .pipe(writeStream)
+          .on('error', reject)
+          .on('finish', () => {
+            resolve({
+              path: filePath,
+              cleanup: cleanupCallback
+            });
+          });
+      });
+
+    })
+    .then((tmpFile) => {
+      _tmpFile = tmpFile;
+
+      return app.services.hProject.createVersion(
+        H_PROJECT_TOKEN,
+        workspace.projectId,
+        tmpFile.path
+      );
+    })
+    .then((version) => {
+      _tmpFile.cleanup();
+
+      // save the versionCode to the workspace database entry
+      workspace.projectVersionCode = version.code;
+
+      return workspace.save();
     });
   };
 

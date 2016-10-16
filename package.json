@@ -26,6 +26,7 @@
     "redis": "^2.6.2",
     "root-path-builder": "git+ssh://git@bitbucket.org/habemus-tutti/root-path-builder.git",
     "socket.io": "^1.5.0",
+    "tmp": "0.0.29",
     "uuid": "^2.0.3",
     "zip-util": "git+ssh://git@bitbucket.org/habemus-tutti/zip-util.git"
   },
