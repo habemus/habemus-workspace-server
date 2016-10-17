@@ -2,6 +2,6 @@ Dockerfile
 .DS_Store
 tmp
 test
-demo
-client
 coverage
+gulpfile.js
+todo.md
