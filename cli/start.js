@@ -14,21 +14,21 @@ var options = envOptions({
 
   // basic info
   apiVersion: 'pkg:version',
-  workspacesFsRoot: 'env:WORKSPACES_FS_ROOT',
   corsWhitelist: 'list:CORS_WHITELIST',
+  workspacesFsRoot: 'env:WORKSPACES_FS_ROOT',
 
   // services
   mongodbURI: 'fs:MONGODB_URI_PATH',
   redisURI: 'fs:REDIS_URI_PATH',
 
-  hProjectURI: 'env:H_PROJECT_URI',
-  hProjectToken: 'fs:H_PROJECT_TOKEN_PATH',
-
   hAccountURI: 'env:H_ACCOUNT_URI',
   hAccountToken: 'fs:H_ACCOUNT_TOKEN_PATH',
 
+  hProjectURI: 'env:H_PROJECT_URI',
+  hProjectToken: 'fs:H_PROJECT_TOKEN_PATH',
+
   enablePrivateAPI: 'bool?:ENABLE_PRIVATE_API',
-  privateAPISecret: 'fs?:PRVATE_API_SECRET',
+  privateAPISecret: 'fs?:PRIVATE_API_SECRET_PATH',
 });
 
 // create http server and pass express app as callback
@@ -39,10 +39,11 @@ app.attach(server).then(() => {
   console.log('h-workspace ready');
 })
 .catch((err) => {
-  console.warn('h-workspace setup error', err);
+  console.error('h-workspace setup error', err);
+  process.exit(1);
 });
 
 // start listening
 server.listen(options.port, function () {
-  console.log('h-dev-cloud admin server listening at port %s', options.port);
+  console.log('h-workspace server listening at port %s', options.port);
 });

@@ -1,6 +1,6 @@
 {
   "name": "h-workspace",
-  "version": "0.0.0",
+  "version": "1.0.0-beta",
   "description": "workspaces",
   "main": "server/index.js",
   "scripts": {
