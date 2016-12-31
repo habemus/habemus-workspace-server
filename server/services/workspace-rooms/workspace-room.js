@@ -37,6 +37,9 @@ function WorkspaceRoom(workspace, options) {
   if (!options.ioApp) {
     throw new Error('options.ioApp is required');
   }
+  if (!options.mainApp) {
+    throw new Error('options.mainApp is required');
+  }
   if (!options.apiVersion) {
     throw new Error('options.apiVersion is required');
   }
@@ -58,6 +61,12 @@ function WorkspaceRoom(workspace, options) {
    * @type {Socket.io}
    */
   this.ioApp = options.ioApp;
+  
+  /**
+   * Store reference to the mainApp
+   * @type {Express app}
+   */
+  this.mainApp = options.mainApp;
 
   /**
    * Store the apiVersion
@@ -307,6 +316,21 @@ WorkspaceRoom.prototype._routeAnonymousSocketMessage = function (socket, message
  * WorkspaceRoom
  */
 WorkspaceRoom.prototype._handleHFsFileEvent = function (eventName, event) {
+
+  
+  if (event.path === '/bower.json') {
+      
+    if (eventName === 'file-created' || eventName === 'file-updated') {
+      
+      this.mainApp.controllers.workspace.bowerInstall(this.workspace);
+      
+    } else if (eventName === 'file-removed') {
+      
+      // TODO: remove bower_components when bower.json is removed
+      
+    }
+    
+  }
   
 };
 

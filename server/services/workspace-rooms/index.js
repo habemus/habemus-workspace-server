@@ -23,6 +23,10 @@ function WorkspaceRoomManager(options) {
   if (!options.ioApp) {
     throw new Error('ioApp is required');
   }
+  
+  if (!options.mainApp) {
+    throw new Error('mainApp is required');
+  }
 
   if (!options.apiVersion) {
     throw new Error('apiVersion is required');
@@ -43,6 +47,12 @@ function WorkspaceRoomManager(options) {
    * @type {Socket.io app}
    */
   this.ioApp = options.ioApp;
+  
+  /**
+   * Store reference to the mainApp
+   * @type {Express app}
+   */
+  this.mainApp = options.mainApp;
 
   /**
    * Store the apiVersion
@@ -141,6 +151,7 @@ WorkspaceRoomManager.prototype.createRoom = function (workspace) {
   var room = new WorkspaceRoom(workspace, {
     rootPath: workspaceRootPath,
     ioApp: this.ioApp,
+    mainApp: this.mainApp,
     apiVersion: this.apiVersion,
   });
 
@@ -232,6 +243,7 @@ module.exports = function setupWorkspaceRoomManager(app, options) {
 
   var workspaceRooms = new WorkspaceRoomManager({
     ioApp: app.io,
+    mainApp: app,
     rootPath: options.workspacesFsRoot,
     apiVersion: options.apiVersion,
 
