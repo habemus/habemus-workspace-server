@@ -1,5 +1,7 @@
 // native dependencies
 const fs = require('fs');
+const path = require('path');
+const child_process = require('child_process');
 
 // third-party dependencies
 const Bluebird   = require('bluebird');
@@ -8,6 +10,8 @@ const debug      = require('debug')('h-dev-project');
 const rimraf     = require('rimraf');
 const zipUtil    = require('zip-util');
 const tmp        = require('tmp');
+// TODO: implement bower install chroot version
+const bower      = require('bower');
 
 // promisify
 Bluebird.promisifyAll(fs);
@@ -15,6 +19,9 @@ const rimrafAsync = Bluebird.promisify(rimraf);
 
 const errors    = require('../../shared/errors');
 const CONSTANTS = require('../../shared/constants');
+
+// path to the bower install script
+const BOWER_INSTALL_SCRIPT_PATH = path.join(__dirname, '../../scripts/bower-install');
 
 module.exports = function (app, options) {
 
@@ -77,13 +84,13 @@ module.exports = function (app, options) {
           return Bluebird.reject(new errors.WorkspaceExists());
         } else {
           // upon any other errors, remove the workspace entirely
-          if (_workspace && _workspace._id) {
+          if (workspace && workspace._id) {
             Workspace.findOneAndRemove({
-              _id: _workspace._id
+              _id: workspace._id
             });
 
             var workspacePath = 
-              app.services.workspacesRoot.prependTo(_workspace._id);
+              app.services.workspacesRoot.prependTo(workspace._id);
 
             rimrafAsync(workspacePath).catch((err) => {
               console.warn(
@@ -367,6 +374,69 @@ module.exports = function (app, options) {
           _id: workspace._id
         });
       });
+  };
+  
+  /**
+   * Installs bower dependencies of the given workspace
+   * 
+   * TODO: move into separate script to be run using chroot.
+   * 
+   * @param workspace
+   */
+  workspaceCtrl.bowerInstall = function (workspace, packages) {
+    if (!(workspace instanceof Workspace)) {
+      return Bluebird.reject(new errors.InvalidOption('workspace', 'required'));
+    }
+    
+    packages = packages || [];
+    
+    var workspacePath = app.services.workspacesRoot.prependTo(workspace._id);
+    
+    // TODO: implement chroot version
+    // var args = [
+    //   BOWER_INSTALL_SCRIPT_PATH,
+    //   '--fs-root', workspacePath,
+    // ];
+    
+    // packages.forEach((pkg) => {
+    //   args.push('--package');
+    //   args.push(pkg);
+    // });
+    
+    // return new Bluebird((resolve, reject) => {
+    //   var proc = child_process.execFile('node', args, {
+        
+    //   });
+      
+    //   proc.on('error', reject);
+      
+    //   proc.stderr.pipe(process.stderr)
+      
+    //   proc.on('exit', function (code) {
+    //     if (code !== 0) {
+    //       reject(new Error('exited with code ' + code));
+    //     } else {
+    //       resolve();
+    //     }
+    //   });
+      
+    // });
+    
+    return new Bluebird((resolve, reject) => {
+      
+      var installOptions = {
+        forceLatest: true,
+      };
+      
+      var installConfig = {
+        cwd: workspacePath,
+        interactive: false,
+      };
+      
+      bower.commands.install([], installOptions, installConfig)
+        .on('error', reject)
+        .on('end', resolve);
+    });
   };
   
   return workspaceCtrl;

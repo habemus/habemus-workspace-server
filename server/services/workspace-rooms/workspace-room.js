@@ -6,6 +6,7 @@ const EventEmitter = require('events');
 const Bluebird    = require('bluebird');
 const debug       = require('debug')('h-workspace');
 const jsonMessage = require('json-message');
+const HFs         = require('h-fs');
 
 // own
 const HFsIntercomm = require('./h-fs-intercomm');
@@ -72,13 +73,22 @@ function WorkspaceRoom(workspace, options) {
   // this.messageAPI = jsonMessage(this.apiVersion);
 
   /**
+   * Instantiate hFs
+   */
+  this.hFs = new HFs(this.rootPath);
+  
+  // handle hFs file events
+  this.hFs.on('file-created', this._handleHFsFileEvent.bind(this, 'file-created'));
+  this.hFs.on('file-removed', this._handleHFsFileEvent.bind(this, 'file-removed'));
+  this.hFs.on('file-updated', this._handleHFsFileEvent.bind(this, 'file-updated'));  
+  /**
    * Instantiate the hFsIPC
    * @type {HFsIntercomm}
    */
   this.hFsIPC = new HFsIntercomm({
     ioApp: this.ioApp,
     ioRoomId: this.ioRoomId,
-    rootPath: this.rootPath,
+    hFs: this.hFs,
     apiVersion: this.apiVersion,
   });
 }
@@ -230,6 +240,9 @@ WorkspaceRoom.prototype._routeSocketMessage = function (socket, message) {
   }
 };
 
+/**
+ * Routes authenticated socket connections messages
+ */
 WorkspaceRoom.prototype._routeAuthenticatedSocketMessage = function (socket, message) {
 
   if (message.type === 'rpc-request') {
@@ -263,6 +276,9 @@ WorkspaceRoom.prototype._routeAuthenticatedSocketMessage = function (socket, mes
   }
 };
 
+/**
+ * Routes anonymous socket connection messages
+ */
 WorkspaceRoom.prototype._routeAnonymousSocketMessage = function (socket, message) {
 
   switch (message.type) {
@@ -284,6 +300,14 @@ WorkspaceRoom.prototype._routeAnonymousSocketMessage = function (socket, message
         .emit(SHARED_CONSTATNS.MESSAGE_EVENT, message);
       break;
   }
+};
+
+/**
+ * Handles file-related events on the hFs instance associated to this
+ * WorkspaceRoom
+ */
+WorkspaceRoom.prototype._handleHFsFileEvent = function (eventName, event) {
+  
 };
 
 module.exports = WorkspaceRoom;

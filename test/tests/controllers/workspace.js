@@ -22,6 +22,8 @@ describe('workspaceCtrl', function () {
   var workspaceCtrl;
 
   beforeEach(function () {
+    
+    this.timeout(5000);
 
     aux.enableHMocks();
 
@@ -153,6 +155,32 @@ describe('workspaceCtrl', function () {
   });
 
   describe('#delete(workspace)', function () {
+
+  });
+  
+  describe('#bowerInstall(workspace)', function () {
+    beforeEach(function () {
+      
+      this.timeout(5000);
+
+      return Bluebird.all([
+        workspaceCtrl.create('someuser', 'project-1-id'),
+      ])
+      .then((workspaces) => {
+        ASSETS.workspaces = workspaces;
+      });
+    });
+    
+    it('should install bower dependencies of the given workspace', function () {
+      this.timeout(60 * 1000);
+      return workspaceCtrl.bowerInstall(ASSETS.workspaces[0])
+        .then((results) => {
+          // console.log(results);
+        })
+        .catch((err) => {
+          console.warn(err);
+        });
+    });
 
   });
 });

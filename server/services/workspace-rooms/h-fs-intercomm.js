@@ -3,7 +3,6 @@ const util = require('util');
 
 // third-party dependencies
 const Intercomm = require('intercomm');
-const HFs       = require('h-fs');
 const debug     = require('debug')('h-workspace');
 
 // constants
@@ -22,8 +21,8 @@ function HFsIntercomm(options) {
     throw new Error('ioRoomId is required');
   }
 
-  if (typeof options.rootPath !== 'string' || !options.rootPath) {
-    throw new TypeError('rootPath MUST be a non-empty string');
+  if (!options.hFs) {
+    throw new TypeError('hFs is required');
   }
 
   /**
@@ -55,17 +54,11 @@ function HFsIntercomm(options) {
   this.ioApp = options.ioApp;
 
   /**
-   * Store the workspace's rootPath
-   * @type {String}
-   */
-  this.rootPath = options.rootPath;
-
-  /**
    * Instantiate the hFs and store it in the instance
    * @type {HFs}
    */
-  var hFs = new HFs(this.rootPath);
-  this.hFs = hFs;
+  this.hFs = options.hFs;
+  var hFs = this.hFs;
   
   // expose the hFs api
   this.expose({
