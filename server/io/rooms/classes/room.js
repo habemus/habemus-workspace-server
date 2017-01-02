@@ -12,13 +12,13 @@ const HFs         = require('h-fs');
 const HFsIntercomm = require('./h-fs-intercomm');
 
 // constants
-const SHARED_CONSTATNS = require('../../../shared/constants');
+const SHARED_CONSTATNS = require('../../../../shared/constants');
 
 const ROLES = SHARED_CONSTATNS.ROLES;
 
 /**
  * Constructor of a workspace.
- * The WorkspaceRoom is responsible for setting up resources for
+ * The Room is responsible for setting up resources for
  * each of the workspaces:
  * - hFs
  * - message routing
@@ -26,7 +26,7 @@ const ROLES = SHARED_CONSTATNS.ROLES;
  * @param {String} workspace
  * @param {Object} options
  */
-function WorkspaceRoom(workspace, options) {
+function Room(workspace, options) {
 
   if (!workspace) {
     throw new Error('workspace is required');
@@ -51,7 +51,7 @@ function WorkspaceRoom(workspace, options) {
   this.workspace = workspace;
 
   /**
-   * WorkspaceRoom's rootPath
+   * Room's rootPath
    * @type {String}
    */
   this.rootPath = options.rootPath;
@@ -101,14 +101,14 @@ function WorkspaceRoom(workspace, options) {
     apiVersion: this.apiVersion,
   });
 }
-util.inherits(WorkspaceRoom, EventEmitter);
+util.inherits(Room, EventEmitter);
 
 /**
  * Id of the socket.io room used to broadcast messages to
  * sockets that are connected to this workspace
  * @type {String}
  */
-Object.defineProperty(WorkspaceRoom.prototype, 'ioRoomId', {
+Object.defineProperty(Room.prototype, 'ioRoomId', {
   get: function () {
     return 'workspace-io-room#' + this.workspace._id; 
   },
@@ -122,14 +122,14 @@ Object.defineProperty(WorkspaceRoom.prototype, 'ioRoomId', {
  * @param  {socket.io socket} socket
  * @return {Bluebird}
  */
-WorkspaceRoom.prototype.join = function (socket, role) {
+Room.prototype.join = function (socket, role) {
   // let the socket join the workspace's room
   socket.join(this.ioRoomId);
 
   // store the role in the socket itself
   socket.role = role;
 
-  debug('WorkspaceRoom#join', this.ioRoomId, role);
+  debug('Room#join', this.ioRoomId, role);
 
   socket.on(SHARED_CONSTATNS.MESSAGE_EVENT,
     this._routeSocketMessage.bind(this, socket));
@@ -141,7 +141,7 @@ WorkspaceRoom.prototype.join = function (socket, role) {
  * Sets event listeners and timers.
  * @return {Bluebird}
  */
-WorkspaceRoom.prototype.setup = function () {
+Room.prototype.setup = function () {
 
   return Bluebird.resolve();
 };
@@ -151,7 +151,7 @@ WorkspaceRoom.prototype.setup = function () {
  * related to the workspace room
  * @return {Bluebird}
  */
-WorkspaceRoom.prototype.destroy = function () {
+Room.prototype.destroy = function () {
 
   this.socketBroadcast(SHARED_CONSTATNS.ROOM_DESTROYED_EVENT)
 
@@ -176,7 +176,7 @@ WorkspaceRoom.prototype.destroy = function () {
  * @param  {String} eventName
  * @param  {*} data
  */
-WorkspaceRoom.prototype.socketBroadcast = function (eventName, data) {
+Room.prototype.socketBroadcast = function (eventName, data) {
   // events are broadcasted to the whole room
   this.ioApp.in(this.ioRoomId).emit(eventName, data);
 };
@@ -191,12 +191,12 @@ WorkspaceRoom.prototype.socketBroadcast = function (eventName, data) {
  * to the room.
  *
  * On the other hand, it is perfect for listing
- * sockets connected to node to check if the node's WorkspaceRoom
+ * sockets connected to node to check if the node's Room
  * is still in use.
  * 
  * @return {Bluebird -> Array}
  */
-WorkspaceRoom.prototype.listLocalSockets = function () {
+Room.prototype.listLocalSockets = function () {
   return new Bluebird((resolve, reject) => {
     this.ioApp.in(this.ioRoomId).clients(function (err, clients) {
       if (err) {
@@ -212,7 +212,7 @@ WorkspaceRoom.prototype.listLocalSockets = function () {
  * Handles `disconnect` events fired at a socket
  * @param  {Socket.io socket} socket
  */
-WorkspaceRoom.prototype._handleSocketDisconnect = function (socket) {
+Room.prototype._handleSocketDisconnect = function (socket) {
   debug('socket %s has disconnected', socket.id);
 
   this.listLocalSockets().then((socketIds) => {
@@ -238,7 +238,7 @@ WorkspaceRoom.prototype._handleSocketDisconnect = function (socket) {
  * @param  {Socket.io socket} socket
  * @param  {Object} message
  */
-WorkspaceRoom.prototype._routeSocketMessage = function (socket, message) {
+Room.prototype._routeSocketMessage = function (socket, message) {
 
   debug('message received in socket for workspace %s', this.workspace._id, message);
 
@@ -252,7 +252,7 @@ WorkspaceRoom.prototype._routeSocketMessage = function (socket, message) {
 /**
  * Routes authenticated socket connections messages
  */
-WorkspaceRoom.prototype._routeAuthenticatedSocketMessage = function (socket, message) {
+Room.prototype._routeAuthenticatedSocketMessage = function (socket, message) {
 
   if (message.type === 'rpc-request') {
 
@@ -288,7 +288,7 @@ WorkspaceRoom.prototype._routeAuthenticatedSocketMessage = function (socket, mes
 /**
  * Routes anonymous socket connection messages
  */
-WorkspaceRoom.prototype._routeAnonymousSocketMessage = function (socket, message) {
+Room.prototype._routeAnonymousSocketMessage = function (socket, message) {
 
   switch (message.type) {
     case 'rpc-request':
@@ -313,16 +313,24 @@ WorkspaceRoom.prototype._routeAnonymousSocketMessage = function (socket, message
 
 /**
  * Handles file-related events on the hFs instance associated to this
- * WorkspaceRoom
+ * Room
  */
-WorkspaceRoom.prototype._handleHFsFileEvent = function (eventName, event) {
+Room.prototype._handleHFsFileEvent = function (eventName, event) {
 
   
   if (event.path === '/bower.json') {
       
     if (eventName === 'file-created' || eventName === 'file-updated') {
+
+      return this.hFs.readFile('/bower.json', 'utf8')
+        .then((contents) => {
+          var bowerJson = JSON.parse(contents);
+
+          if (bowerJson['enable-bower-beta']) {
+            return this.mainApp.controllers.workspace.bowerInstall(this.workspace);
+          }
+        })
       
-      this.mainApp.controllers.workspace.bowerInstall(this.workspace);
       
     } else if (eventName === 'file-removed') {
       
@@ -334,4 +342,4 @@ WorkspaceRoom.prototype._handleHFsFileEvent = function (eventName, event) {
   
 };
 
-module.exports = WorkspaceRoom;
+module.exports = Room;

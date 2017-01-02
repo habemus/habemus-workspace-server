@@ -6,16 +6,16 @@ const Bluebird        = require('bluebird');
 const rootPathBuilder = require('root-path-builder');
 
 // own
-const WorkspaceRoom = require('./workspace-room');
+const Room = require('./room');
 
-const CONSTANTS = require('../../../shared/constants');
+const CONSTANTS = require('../../../../shared/constants');
 
 /**
  * Constructor of an object responsible for managing
  * active workspaces.
  * @param {Object} options
  */
-function WorkspaceRoomManager(options) {
+function RoomManager(options) {
   if (!options.rootPath || typeof options.rootPath !== 'string') {
     throw new Error('rootPath is required');
   }
@@ -76,7 +76,7 @@ function WorkspaceRoomManager(options) {
    * Hash to store workspaces by their ids
    * @type {Object}
    */
-  this.workspaceRooms = {};
+  this.rooms = {};
 }
 
 /**
@@ -84,7 +84,7 @@ function WorkspaceRoomManager(options) {
  * @param  {String} eventName
  * @param  {String} workspaceId
  */
-WorkspaceRoomManager.prototype._handleWorkspaceEvent = function (eventName, workspaceId) {
+RoomManager.prototype._handleWorkspaceEvent = function (eventName, workspaceId) {
   switch (eventName) {
     case CONSTANTS.WORKSPACE_EVENTS.UPDATE_STARTED:
 
@@ -131,14 +131,14 @@ WorkspaceRoomManager.prototype._handleWorkspaceEvent = function (eventName, work
 /**
  * Creates a room for the workspace
  * @param  {Workspace} workspace
- * @return {Bluebird -> WorkspaceRoom}
+ * @return {Bluebird -> Room}
  */
-WorkspaceRoomManager.prototype.createRoom = function (workspace) {
+RoomManager.prototype.createRoom = function (workspace) {
   if (!workspace || !workspace._id) {
     return Bluebird.reject(new Error('invalid workspace'));
   }
 
-  if (this.workspaceRooms[workspace._id]) {
+  if (this.rooms[workspace._id]) {
     return Bluebird.reject(new Error('workspaceRoom exists: ' + workspace._id));
   }
 
@@ -148,7 +148,7 @@ WorkspaceRoomManager.prototype.createRoom = function (workspace) {
    */
   var workspaceRootPath = this.root.prependTo(workspace._id);
 
-  var room = new WorkspaceRoom(workspace, {
+  var room = new Room(workspace, {
     rootPath: workspaceRootPath,
     ioApp: this.ioApp,
     mainApp: this.mainApp,
@@ -168,7 +168,7 @@ WorkspaceRoomManager.prototype.createRoom = function (workspace) {
       /**
        * Save the workspace room by the workspace._id
        */
-      this.workspaceRooms[workspace._id] = room;
+      this.rooms[workspace._id] = room;
 
       return room;
     });
@@ -177,22 +177,22 @@ WorkspaceRoomManager.prototype.createRoom = function (workspace) {
 /**
  * Retrieves the workspace rooom by the workspace's _id
  * @param  {String} workspaceId
- * @return {WorkspaceRoom}
+ * @return {Room}
  */
-WorkspaceRoomManager.prototype.getRoom = function (workspaceId) {
-  return Bluebird.resolve(this.workspaceRooms[workspaceId] || null);
+RoomManager.prototype.getRoom = function (workspaceId) {
+  return Bluebird.resolve(this.rooms[workspaceId] || null);
 };
 
 /**
  * Destroys the workspace room identified by the given workspaceId
  * @param  {String} workspaceId
  */
-WorkspaceRoomManager.prototype.destroyRoom = function (workspaceId) {
+RoomManager.prototype.destroyRoom = function (workspaceId) {
 
-  var room = this.workspaceRooms[workspaceId];
+  var room = this.rooms[workspaceId];
 
   // TODO study whether this deletion is enough
-  delete this.workspaceRooms[workspaceId];
+  delete this.rooms[workspaceId];
 
   return room.destroy()
     .then(() => {
@@ -207,7 +207,7 @@ WorkspaceRoomManager.prototype.destroyRoom = function (workspaceId) {
  * @param  {String} workspaceId
  * @return {Bluebird}
  */
-WorkspaceRoomManager.prototype.ensureRoomDestroyed = function (workspaceId) {
+RoomManager.prototype.ensureRoomDestroyed = function (workspaceId) {
   return this.getRoom(workspaceId)
     .then((room) => {
       if (room) {
@@ -222,33 +222,18 @@ WorkspaceRoomManager.prototype.ensureRoomDestroyed = function (workspaceId) {
  * Otherwise, create a workspace object and return it.
  * 
  * @param  {Workspace} workspace
- * @return {WorkspaceRoom}
+ * @return {Room}
  */
-WorkspaceRoomManager.prototype.ensureRoom = function (workspace) {
+RoomManager.prototype.ensureRoom = function (workspace) {
   if (!workspace || !workspace._id) {
     throw new Error('workspace is required');
   }
 
-  if (!this.workspaceRooms[workspace._id]) {
+  if (!this.rooms[workspace._id]) {
     return this.createRoom(workspace);
   } else {
-    return Bluebird.resolve(this.workspaceRooms[workspace._id]);
+    return Bluebird.resolve(this.rooms[workspace._id]);
   }
 };
 
-/**
- * Export a function that sets up the workspace room manager.
- */
-module.exports = function setupWorkspaceRoomManager(app, options) {
-
-  var workspaceRooms = new WorkspaceRoomManager({
-    ioApp: app.io,
-    mainApp: app,
-    rootPath: options.workspacesFsRoot,
-    apiVersion: options.apiVersion,
-
-    redisSubClient: app.services.redis.sub,
-  });
-
-  return workspaceRooms;
-};
+module.exports = RoomManager;

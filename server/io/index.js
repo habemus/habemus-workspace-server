@@ -15,6 +15,7 @@ module.exports = function (app, options) {
 
   // setup connection handler
   require('./connection')(app, options);
+  require('./rooms')(app, options);
 
   return app;
 };

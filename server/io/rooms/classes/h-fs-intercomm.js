@@ -6,7 +6,7 @@ const Intercomm = require('intercomm');
 const debug     = require('debug')('h-workspace');
 
 // constants
-const SHARED_CONSTANTS = require('../../../shared/constants');
+const SHARED_CONSTANTS = require('../../../../shared/constants');
 
 /**
  * HFsIntercomm constructor

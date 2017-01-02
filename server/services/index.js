@@ -26,14 +26,6 @@ module.exports = function (app, options) {
     app.services.cors = services[6];
     app.services.workspaceSetupManager = services[7];
 
-    return Bluebird.all([
-      require('./workspace-rooms')(app, options),
-    ])
-  })
-  .then((services) => {
-
-    app.services.workspaceRooms = services[0];
-
     // ensure nothing is returned by the promise
     return;
   });

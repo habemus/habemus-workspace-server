@@ -103,8 +103,8 @@ module.exports = function (app, options) {
 
         // ensure the workspaceRoom object exists
         // and let the socket join it
-        return app.services
-          .workspaceRooms
+        return app.io
+          .roomManager
           .ensureRoom(_workspace);
       })
       .then((workspaceRoom) => {
@@ -145,7 +145,7 @@ module.exports = function (app, options) {
     return app.controllers.workspace.getByProjectCode(projectCode)
       .then((workspace) => {
         // retrieve the workspace's room
-        return app.services.workspaceRooms.getRoom(workspace._id);
+        return app.io.roomManager.getRoom(workspace._id);
       })
       .then((workspaceRoom) => {
 

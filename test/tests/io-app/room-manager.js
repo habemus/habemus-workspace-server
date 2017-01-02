@@ -14,7 +14,7 @@ const AuthenticatedClient = require('h-workspace-client/public/authenticated');
 // auxiliary
 const aux = require('../../aux');
 
-describe('workspaceRooms', function () {
+describe('room-manager', function () {
 
   var ASSETS;
 
@@ -80,12 +80,11 @@ describe('workspaceRooms', function () {
     ])
     .then(() => {
       // there should be only one workspace room
-      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.io.roomManager.rooms)
         .length.should.equal(1);
 
       // the workspaceRoom should be an object
-      var workspaceRoom = ASSETS.hWorkspace.services
-        .workspaceRooms.workspaceRooms[ASSETS.workspace._id];
+      var workspaceRoom = ASSETS.hWorkspace.io.roomManager.rooms[ASSETS.workspace._id];
       should(workspaceRoom).be.instanceof(Object);
 
       // and it should have 3 sockets connected to it
@@ -104,7 +103,7 @@ describe('workspaceRooms', function () {
     });
   });
 
-  it('upon socket disconnection, the workspaceRooms should check if the workspaceRoom is still required and clean up if necessary', function () {
+  it('upon socket disconnection, the rooms should check if the workspaceRoom is still required and clean up if necessary', function () {
 
     const projectRoot = ASSETS.tmpRootPath + '/' + ASSETS.workspace._id;
 
@@ -132,13 +131,12 @@ describe('workspaceRooms', function () {
       client3.connect(token, 'project-1-code'),
     ])
     .then(() => {
-      var workspaceRoom = ASSETS.hWorkspace.services
-        .workspaceRooms.workspaceRooms[ASSETS.workspace._id];
+      var workspaceRoom = ASSETS.hWorkspace.io.roomManager.rooms[ASSETS.workspace._id];
 
       should(workspaceRoom).be.instanceof(Object);
 
       // there should be only one workspaceRoom
-      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.io.roomManager.rooms)
         .length.should.equal(1);
       
       // disconnect one client
@@ -147,9 +145,9 @@ describe('workspaceRooms', function () {
       return aux.wait(400);
     })
     .then(() => {
-      // nothing should have happened to the workspaceRooms as there are still other
+      // nothing should have happened to the rooms as there are still other
       // two clients connected to the project
-      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.io.roomManager.rooms)
         .length.should.equal(1);
 
       // disconnect all clients
@@ -160,7 +158,7 @@ describe('workspaceRooms', function () {
     })
     .then(() => {
       // the workspaceRoom should have been completely removed
-      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.io.roomManager.rooms)
         .length.should.equal(0);
     });
   });
@@ -192,13 +190,12 @@ describe('workspaceRooms', function () {
       client3.connect(token, 'project-1-code'),
     ])
     .then(() => {
-      var workspaceRoom = ASSETS.hWorkspace.services
-        .workspaceRooms.workspaceRooms[ASSETS.workspace._id];
+      var workspaceRoom = ASSETS.hWorkspace.io.roomManager.rooms[ASSETS.workspace._id];
 
       should(workspaceRoom).be.instanceof(Object);
 
       // there should be only one resource pack
-      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.io.roomManager.rooms)
         .length.should.equal(1);
       
       // disconnect one client
@@ -209,7 +206,7 @@ describe('workspaceRooms', function () {
     .then(() => {
       // nothing should have happened to the rooms as there are still other
       // two clients connected to the project
-      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.io.roomManager.rooms)
         .length.should.equal(1);
 
       // disconnect all clients
@@ -220,7 +217,7 @@ describe('workspaceRooms', function () {
     })
     .then(() => {
       // the resources should have been completely removed
-      Object.keys(ASSETS.hWorkspace.services.workspaceRooms.workspaceRooms)
+      Object.keys(ASSETS.hWorkspace.io.roomManager.rooms)
         .length.should.equal(0);
     });
   });
