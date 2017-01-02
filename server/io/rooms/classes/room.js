@@ -327,7 +327,33 @@ Room.prototype._handleHFsFileEvent = function (eventName, event) {
           var bowerJson = JSON.parse(contents);
 
           if (bowerJson['enable-bower-beta']) {
-            return this.mainApp.controllers.workspace.bowerInstall(this.workspace);
+            return this.mainApp.controllers.workspace.bowerInstall(this.workspace)
+              .then(() => {
+                // publish fs events regarding installed
+                // bower components
+                return this.hFs.readDirectory('/bower_components');
+              })
+              .then((directoryContents) => {
+
+                // TODO: internalize method for publishing events
+                // from outside world
+                directoryContents.forEach((content) => {
+                  if (content.isDirectory) {
+
+                    this.hFs.publishFsEvent('directory-created', {
+                      path: content.path,
+                    });
+
+                  } else if (content.isFile) {
+
+                    this.hFs.publishFsEvent('file-created', {
+                      path: content.path,
+                    });
+
+                  }
+                });
+
+              });
           }
         })
       

@@ -53,7 +53,7 @@ describe('rpc', function () {
     return aux.teardown();
   });
 
-  it('if two clients are connected to the same hDev project, they should be capable of executing rpc methods on each other', function (done) {
+  it('whenever the bower.json file is modified and is valid, bower-install command should be executed', function (done) {
 
     const projectRoot = ASSETS.tmpRootPath + '/' + ASSETS.workspace._id;
 
