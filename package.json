@@ -21,7 +21,7 @@
     "h-account-client": "git+ssh://git@bitbucket.org/habemus-tutti/h-account-client.git",
     "h-fs": "git+ssh://git@bitbucket.org/habemus-tutti/h-fs.git",
     "h-project-client": "git+ssh://git@bitbucket.org/habemus-tutti/h-project-client.git",
-    "intercomm": "^1.0.0-alpha.2",
+    "intercomm": "^1.0.0-alpha.3",
     "json-message": "^2.0.0-beta.5",
     "mongoose": "^4.6.3",
     "redis": "^2.6.2",
