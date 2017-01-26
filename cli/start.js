@@ -37,13 +37,13 @@ var server = http.createServer();
 var app = hWorkspace(options);
 app.attach(server).then(() => {
   console.log('h-workspace ready');
+
+  // start listening
+  server.listen(options.port, function () {
+    console.log('h-workspace server listening at port %s', options.port);
+  });
 })
 .catch((err) => {
   console.error('h-workspace setup error', err);
   process.exit(1);
-});
-
-// start listening
-server.listen(options.port, function () {
-  console.log('h-workspace server listening at port %s', options.port);
 });
