@@ -8,7 +8,7 @@ const Bluebird = require('bluebird');
 
 // own dependencies
 const createAdminApp = require('../../../server');
-const AuthenticatedClient = require('h-workspace-client/public/authenticated');
+const AuthenticatedClient = require('habemus-workspace-client/public/authenticated');
 
 // auxiliary
 const aux = require('../../aux');

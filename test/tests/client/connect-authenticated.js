@@ -9,7 +9,7 @@ const fse    = require('fs-extra');
 const Bluebird = require('bluebird');
 
 // own dependencies
-const AuthenticatedClient = require('h-workspace-client/public/authenticated');
+const AuthenticatedClient = require('habemus-workspace-client/public/authenticated');
 const hWorkspace = require('../../../server');
 
 // auxiliary

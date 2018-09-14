@@ -310,7 +310,7 @@ module.exports = function (app, options) {
     })
     .catch((err) => {
       // we must handle this error manually as the `NotFound` error
-      // is not from h-workspace but from h-project-client
+      // is not from h-workspace but from habemus-project-client
       if (err.name === 'NotFound') {
         return Bluebird.reject(new errors.NotFound());
       } else {

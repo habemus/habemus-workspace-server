@@ -1,7 +1,7 @@
 // third-party
 const Bluebird = require('bluebird');
 
-const PrivateHAccount = require('h-account-client/private');
+const PrivateHAccount = require('habemus-account-client/private');
 
 module.exports = function (app, options) {
   

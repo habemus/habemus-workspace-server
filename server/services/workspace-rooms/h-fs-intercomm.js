@@ -3,17 +3,17 @@ const util = require('util');
 
 // third-party dependencies
 const Intercomm = require('intercomm');
-const HFs       = require('h-fs');
+const VirtualFs = require('@habemus/virtual-fs');
 const debug     = require('debug')('h-workspace');
 
 // constants
 const SHARED_CONSTANTS = require('../../../shared/constants');
 
 /**
- * HFsIntercomm constructor
+ * VirtualFsIntercomm constructor
  * @param {Object} options [description]
  */
-function HFsIntercomm(options) {
+function VirtualFsIntercomm(options) {
   if (!options.ioApp) {
     throw new Error('ioApp is required');
   }
@@ -62,9 +62,9 @@ function HFsIntercomm(options) {
 
   /**
    * Instantiate the hFs and store it in the instance
-   * @type {HFs}
+   * @type {VirtualFs}
    */
-  var hFs = new HFs(this.rootPath);
+  var hFs = new VirtualFs(this.rootPath);
   this.hFs = hFs;
   
   // expose the hFs api
@@ -95,15 +95,15 @@ function HFsIntercomm(options) {
   hFs.on('directory-created', this.publish.bind(this, 'directory-created'));
   hFs.on('directory-removed', this.publish.bind(this, 'directory-removed'));
 }
-util.inherits(HFsIntercomm, Intercomm);
+util.inherits(VirtualFsIntercomm, Intercomm);
 
 /**
  * Define `sendMessage` behavior to use the ioApp
  * @param  {Object} message
  */
-HFsIntercomm.prototype.sendMessage = function (message) {
+VirtualFsIntercomm.prototype.sendMessage = function (message) {
 
-  debug('send message from HFsIntercomm', message);
+  debug('send message from VirtualFsIntercomm', message);
 
   if (message.to) {
 
@@ -130,7 +130,7 @@ HFsIntercomm.prototype.sendMessage = function (message) {
  * @param  {IPC response} response
  * @param  {IPC result} result
  */
-HFsIntercomm.prototype.loadResponseData = function (request, response, result) {
+VirtualFsIntercomm.prototype.loadResponseData = function (request, response, result) {
   response.data = result;
 };
 
@@ -141,7 +141,7 @@ HFsIntercomm.prototype.loadResponseData = function (request, response, result) {
  * @param  {IPC response} response
  * @param  {IPC error} error
  */
-HFsIntercomm.prototype.loadErrorData = function (request, response, error) {
+VirtualFsIntercomm.prototype.loadErrorData = function (request, response, error) {
   response.load(error, {
     name: true,
     option: true,
@@ -149,4 +149,4 @@ HFsIntercomm.prototype.loadErrorData = function (request, response, error) {
   })
 };
 
-module.exports = HFsIntercomm;
+module.exports = VirtualFsIntercomm;

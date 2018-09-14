@@ -8,7 +8,7 @@ const MongoClient = require('mongodb').MongoClient;
 const enableDestroy = require('server-destroy');
 const Bluebird = require('bluebird');
 const mockery = require('mockery');
-const mockPrivateHProject = require('h-project-client/mock/private');
+const mockPrivateHProject = require('habemus-project-client/mock/private');
 
 const fileServer = require('./file-server');
 
@@ -16,7 +16,7 @@ const TMP_ROOT_PATH = path.join(__dirname, '../.tmp');
 const FIXTURES_ROOT_PATH = path.join(__dirname, '../fixtures');
 
 const TEST_DB_URI = 'mongodb://localhost:27017/h-dev-test-db';
-const TEST_REDIS_URI = 'redis://192.168.99.100:6379';
+const TEST_REDIS_URI = 'redis://localhost:6379';
 
 exports.mongodbURI = TEST_DB_URI;
 exports.redisURI   = TEST_REDIS_URI;
@@ -52,7 +52,7 @@ exports.enableHMocks = function () {
 
   // mock h-project/client/private
   mockery.registerMock(
-    'h-project-client/private',
+    'habemus-project-client/private',
     mockPrivateHProject({
       data: require('./h-project-mock-data'),
     })
@@ -73,7 +73,7 @@ exports.enableHMocks = function () {
   };
 
   mockery.registerMock(
-    'h-account-client/private',
+    'habemus-account-client/private',
     PrivateHAccountMock
   );
 };
